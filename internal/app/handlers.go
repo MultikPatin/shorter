@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	urlPrefix = "http://"
-	delimiter = "/"
+	urlPrefix   = "http://"
+	delimiter   = "/"
+	contentType = "text/plain; charset=utf-8"
 )
 
 var db = NewInMemoryDB()
@@ -37,7 +38,7 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	response := urlPrefix + req.Host + delimiter + id.String() + delimiter
 
-	res.Header().Set("content-type", "text/plain")
+	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
 	res.Write([]byte(response))
 }
@@ -60,7 +61,7 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	}
 	fmt.Println(origin)
 
-	res.Header().Set("content-type", "text/plain")
+	res.Header().Set("content-type", contentType)
 	res.Header().Set("Location", origin)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
