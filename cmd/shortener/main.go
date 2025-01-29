@@ -1,7 +1,7 @@
 package main
 
 import (
-	app "github.com/MultikPatin/shorter/internal/app"
+	"main/internal/app"
 	"net/http"
 )
 
