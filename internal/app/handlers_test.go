@@ -54,6 +54,7 @@ func TestPostLink(t *testing.T) {
 			assert.Equal(t, test.want.statusCode, res.StatusCode)
 			assert.Equal(t, test.want.contentType, res.Header.Get("Content-Type"))
 
+			res.Body.Close()
 		})
 	}
 }
