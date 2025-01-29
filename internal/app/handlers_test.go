@@ -118,6 +118,10 @@ func TestGetLink(t *testing.T) {
 			assert.Equal(t, test.want.contentType, res.Header.Get("Content-Type"))
 
 			err = res.Body.Close()
+			if err != nil {
+				t.Fatalf("Failed to close response body")
+				return
+			}
 		})
 	}
 }
