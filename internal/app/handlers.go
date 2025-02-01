@@ -7,13 +7,12 @@ import (
 	"net/http"
 )
 
+var inMemoryDB = NewInMemoryDB()
+
 const (
-	urlPrefix   = "http://"
 	delimiter   = "/"
 	contentType = "text/plain; charset=utf-8"
 )
-
-var db = NewInMemoryDB()
 
 func postLink(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
@@ -30,17 +29,18 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Failed to generate UUID", http.StatusInternalServerError)
 		return
 	}
-	id, err := db.AddLink(u, string(body))
+
+	key := CmdConfig.ShorLink.Addr + u.String() + delimiter
+
+	id, err := inMemoryDB.AddLink(key, string(body))
 	if err != nil {
 		http.Error(res, "Failed to add link", http.StatusInternalServerError)
 		return
 	}
 
-	response := urlPrefix + req.Host + delimiter + id.String() + delimiter
-
 	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(response))
+	res.Write([]byte(id))
 }
 
 func getLink(res http.ResponseWriter, req *http.Request) {
@@ -48,13 +48,9 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Only GET requests are allowed!", http.StatusMethodNotAllowed)
 		return
 	}
-	short := req.PathValue("id")
-	id, err := uuid.Parse(short)
-	if err != nil {
-		http.Error(res, "Path value is not valid UUID", http.StatusBadRequest)
-		return
-	}
-	origin, err := db.GetByID(id)
+	id := req.PathValue("id")
+
+	origin, err := inMemoryDB.GetByID(id)
 	if err != nil {
 		http.Error(res, "Origin not found", http.StatusNotFound)
 		return

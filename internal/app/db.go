@@ -2,27 +2,26 @@ package app
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 )
 
 type InMemoryDB struct {
-	links map[uuid.UUID]string
+	links map[string]string
 }
 
 func NewInMemoryDB() *InMemoryDB {
 	return &InMemoryDB{
-		links: make(map[uuid.UUID]string),
+		links: make(map[string]string),
 	}
 }
 
-func (db *InMemoryDB) AddLink(id uuid.UUID, link string) (uuid.UUID, error) {
+func (db *InMemoryDB) AddLink(id string, link string) (string, error) {
 	db.links[id] = link
 	return id, nil
 }
 
-func (db *InMemoryDB) GetByID(id uuid.UUID) (string, error) {
+func (db *InMemoryDB) GetByID(id string) (string, error) {
 	if link, ok := db.links[id]; ok {
 		return link, nil
 	}
-	return "", fmt.Errorf("user with id %d not found", id)
+	return "", fmt.Errorf("user with id %s not found", id)
 }

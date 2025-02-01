@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const urlPrefix = "http://"
+
 func TestPostLink(t *testing.T) {
 	type want struct {
 		contentType string
@@ -101,14 +103,14 @@ func TestGetLink(t *testing.T) {
 				t.Fatalf("Failed to generate UUID")
 				return
 			}
-			id, err := db.AddLink(u, urlPrefix+"test.com")
+			id, err := inMemoryDB.AddLink(u.String(), urlPrefix+"test.com")
 			if err != nil {
 				t.Fatalf("Failed to add link")
 				return
 			}
 
-			request := httptest.NewRequest(test.req.method, "/"+id.String()+"/", nil)
-			request.SetPathValue("id", id.String())
+			request := httptest.NewRequest(test.req.method, "/"+id+"/", nil)
+			request.SetPathValue("id", id)
 
 			w := httptest.NewRecorder()
 			getLink(w, request)
