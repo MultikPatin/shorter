@@ -1,19 +1,12 @@
 package app
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"io"
 	"net/http"
 )
 
 var inMemoryDB = NewInMemoryDB()
-
-const (
-	urlPrefix   = "http://"
-	delimiter   = "/"
-	contentType = "text/plain; charset=utf-8"
-)
 
 func postLink(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
@@ -33,9 +26,9 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	key := ""
 	if CmdConfig.ShorLink.Addr == "" {
-		key = urlPrefix + req.Host + delimiter + u.String() + delimiter
+		key = u.String()
 	} else {
-		key = CmdConfig.ShorLink.Addr + u.String() + delimiter
+		key = CmdConfig.ShorLink.Addr + u.String()
 	}
 
 	id, err := inMemoryDB.AddLink(key, string(body))
@@ -44,9 +37,11 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	response := urlPrefix + req.Host + delimiter + id + delimiter
+
 	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(id))
+	res.Write([]byte(response))
 }
 
 func getLink(res http.ResponseWriter, req *http.Request) {
@@ -61,7 +56,6 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Origin not found", http.StatusNotFound)
 		return
 	}
-	fmt.Println(origin)
 
 	res.Header().Set("content-type", contentType)
 	res.Header().Set("Location", origin)

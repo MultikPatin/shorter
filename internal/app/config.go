@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+const (
+	urlPrefix   = "http://"
+	delimiter   = "/"
+	contentType = "text/plain; charset=utf-8"
+)
+
 var CmdConfig cmdConfig
 
 func (c *cmdConfig) Parse() error {
@@ -34,12 +40,7 @@ type ServHost struct {
 }
 
 func (a *ServHost) String() string {
-	if a.Port == 0 {
-		a.Port = 8080
-	}
-	if a.Host == "" {
-		a.Host = "localhost"
-	}
+	a.normalize()
 	return a.Host + ":" + strconv.Itoa(a.Port)
 }
 
@@ -52,26 +53,26 @@ func (a *ServHost) Set(s string) error {
 	if err != nil {
 		return err
 	}
-
-	if port == 0 {
-		a.Port = 8080
-	} else {
-		a.Port = port
-	}
-
-	if hp[0] == "" {
-		a.Host = "localhost"
-	} else {
-		a.Host = hp[0]
-	}
+	a.Host = hp[0]
+	a.Port = port
+	a.normalize()
 	return nil
+}
+
+func (a *ServHost) normalize() {
+	if a.Port == 0 {
+		a.Port = 8080
+	}
+	if a.Host == "" {
+		a.Host = "localhost"
+	}
 }
 
 type ShorLink struct {
 	Addr string
 }
 
-func (a ShorLink) String() string {
+func (a *ShorLink) String() string {
 	return a.Addr
 }
 
