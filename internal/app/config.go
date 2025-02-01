@@ -71,19 +71,12 @@ type ShorLink struct {
 	Addr string
 }
 
-func (a *ShorLink) String() string {
-	if a.Addr == "" {
-		a.Addr = urlPrefix + delimiter
-	}
+func (a ShorLink) String() string {
 	return a.Addr
 }
 
 func (a *ShorLink) Set(s string) error {
 	hp := strings.Split(s, ":")
-	if hp[0] == "" {
-		a.Addr = urlPrefix + delimiter
-	} else {
-		a.Addr = hp[0]
-	}
+	a.Addr = hp[0]
 	return nil
 }

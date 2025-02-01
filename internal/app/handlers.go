@@ -31,7 +31,12 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	key := CmdConfig.ShorLink.Addr + u.String() + delimiter
+	key := ""
+	if CmdConfig.ShorLink.Addr == "" {
+		key = urlPrefix + req.Host + delimiter + u.String() + delimiter
+	} else {
+		key = CmdConfig.ShorLink.Addr + u.String() + delimiter
+	}
 
 	id, err := inMemoryDB.AddLink(key, string(body))
 	if err != nil {
