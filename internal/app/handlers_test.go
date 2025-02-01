@@ -9,8 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const urlPrefix = "http://"
-
 func TestPostLink(t *testing.T) {
 	type want struct {
 		contentType string

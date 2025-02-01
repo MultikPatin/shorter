@@ -10,6 +10,7 @@ import (
 var inMemoryDB = NewInMemoryDB()
 
 const (
+	urlPrefix   = "http://"
 	delimiter   = "/"
 	contentType = "text/plain; charset=utf-8"
 )

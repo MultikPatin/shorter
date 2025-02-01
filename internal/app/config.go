@@ -34,7 +34,7 @@ type ServHost struct {
 }
 
 func (a ServHost) String() string {
-	return a.Host + ":" + strconv.Itoa(a.Port)
+	return urlPrefix + a.Host + ":" + strconv.Itoa(a.Port)
 }
 
 func (a *ServHost) Set(s string) error {
