@@ -1,10 +1,17 @@
 package app
 
-import "net/http"
+import (
+	"github.com/go-chi/chi/v5"
+)
 
-func GetRouter() *http.ServeMux {
-	mux := http.NewServeMux()
-	mux.HandleFunc(`/{id}/`, getLink)
-	mux.HandleFunc(`/`, postLink)
-	return mux
+func GetRouter() *chi.Mux {
+	r := chi.NewRouter()
+
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", postLink)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", getLink)
+		})
+	})
+	return r
 }
