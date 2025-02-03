@@ -23,19 +23,22 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Failed to generate UUID", http.StatusInternalServerError)
 		return
 	}
-
-	keyPrefix := EnvConfig.ShorLink
-	if keyPrefix == "" {
-		keyPrefix = CmdConfig.ShorLink.Addr
-	}
-
-	id, err := inMemoryDB.AddLink(keyPrefix+u.String(), string(body))
+	id, err := inMemoryDB.AddLink(u.String(), string(body))
 	if err != nil {
 		http.Error(res, "Failed to add link", http.StatusInternalServerError)
 		return
 	}
 
-	response := urlPrefix + req.Host + delimiter + id + delimiter
+	var response string
+
+	switch {
+	case EnvConfig.ShorLink != "":
+		response = urlPrefix + req.Host + delimiter + id + delimiter
+	case CmdConfig.ShorLink.Addr != "":
+		response = urlPrefix + req.Host + delimiter + id + delimiter
+	default:
+		response = urlPrefix + req.Host + delimiter + id + delimiter
+	}
 
 	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
