@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"flag"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -87,6 +88,7 @@ func (a *ShorLink) Set(s string) error {
 
 func (a *ShorLink) normalize() {
 	_, err := url.Parse(a.Addr)
+	log.Printf("flag -b is not a valid URL. Error: %v\n", err)
 	if err != nil {
 		a.Addr = ""
 	}
