@@ -58,6 +58,8 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	}
 	id := req.PathValue("id")
 
+	log.Printf(id)
+
 	origin, err := inMemoryDB.GetByID(id)
 	if err != nil {
 		http.Error(res, "Origin not found", http.StatusNotFound)
