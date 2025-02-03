@@ -66,7 +66,7 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 		id = strings.TrimPrefix(id, CmdConfig.ShorLink.Addr)
 	}
 
-	log.Printf(id)
+	log.Printf("ID %s", id)
 
 	origin, err := inMemoryDB.GetByID(id)
 	if err != nil {
