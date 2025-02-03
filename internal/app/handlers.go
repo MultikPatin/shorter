@@ -26,22 +26,21 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	key := u.String()
-	if !IsUrl(ShortPre) {
+	var key string
+	var response string
+
+	if IsURL(ShortPre) {
+		key = u.String()
+		response = ShortPre + delimiter + key + delimiter
+	} else {
 		key = ShortPre + key
+		response = urlPrefix + req.Host + delimiter + key + delimiter
 	}
 
-	id, err := inMemoryDB.AddLink(key, string(body))
+	_, err = inMemoryDB.AddLink(key, string(body))
 	if err != nil {
 		http.Error(res, "Failed to add link", http.StatusInternalServerError)
 		return
-	}
-
-	response := ""
-	if !IsUrl(ShortPre) {
-		response = urlPrefix + req.Host + delimiter + id + delimiter
-	} else {
-		response = ShortPre + delimiter + id + delimiter
 	}
 
 	res.Header().Set("content-type", contentType)
@@ -67,7 +66,7 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func IsUrl(str string) bool {
+func IsURL(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
