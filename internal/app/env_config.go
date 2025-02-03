@@ -15,12 +15,12 @@ type envConfig struct {
 
 func (c *envConfig) Parse() error {
 	err := env.Parse(&EnvConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 	_, err = url.Parse(c.ShorLink)
 	if err != nil {
 		c.ShorLink = ""
-	}
-	if err != nil {
-		log.Fatal(err)
 	}
 	return err
 }
