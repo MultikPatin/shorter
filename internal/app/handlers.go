@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/google/uuid"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -31,14 +32,19 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	var response string
 
+	log.Printf(EnvConfig.ShorLink)
+	log.Printf(CmdConfig.ShorLink.Addr)
+
 	switch {
 	case EnvConfig.ShorLink != "":
-		response = urlPrefix + req.Host + EnvConfig.ShorLink + delimiter + id + delimiter
+		response = urlPrefix + req.Host + delimiter + EnvConfig.ShorLink + delimiter + id + delimiter
 	case CmdConfig.ShorLink.Addr != "":
-		response = urlPrefix + req.Host + CmdConfig.ShorLink.Addr + delimiter + id + delimiter
+		response = urlPrefix + req.Host + delimiter + CmdConfig.ShorLink.Addr + delimiter + id + delimiter
 	default:
 		response = urlPrefix + req.Host + delimiter + id + delimiter
 	}
+
+	log.Printf(response)
 
 	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
