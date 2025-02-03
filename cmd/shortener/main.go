@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"main/internal/app"
 	"net/http"
@@ -12,8 +11,16 @@ func main() {
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 	}
-	fmt.Println(app.CmdConfig)
+	err = app.EnvConfig.Parse()
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+	}
+
+	addr := app.EnvConfig.ServHost
+	if addr == "" {
+		addr = app.CmdConfig.ServHost.String()
+	}
 
 	r := app.GetRouter()
-	log.Fatal(http.ListenAndServe(app.CmdConfig.ServHost.String(), r))
+	log.Fatal(http.ListenAndServe(addr, r))
 }

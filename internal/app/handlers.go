@@ -24,14 +24,12 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	key := ""
-	if CmdConfig.ShorLink.Addr == "" {
-		key = u.String()
-	} else {
-		key = CmdConfig.ShorLink.Addr + u.String()
+	keyPrefix := EnvConfig.ShorLink
+	if keyPrefix == "" {
+		keyPrefix = CmdConfig.ShorLink.Addr
 	}
 
-	id, err := inMemoryDB.AddLink(key, string(body))
+	id, err := inMemoryDB.AddLink(keyPrefix+u.String(), string(body))
 	if err != nil {
 		http.Error(res, "Failed to add link", http.StatusInternalServerError)
 		return
