@@ -25,7 +25,7 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Failed to generate UUID", http.StatusInternalServerError)
 		return
 	}
-	id, err := inMemoryDB.AddLink(u.String(), string(body))
+	id, err := inMemoryDB.AddLink(delimiter+u.String()+delimiter, string(body))
 	if err != nil {
 		http.Error(res, "Failed to add link", http.StatusInternalServerError)
 		return
@@ -33,14 +33,15 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	var response string
 
+	log.Printf(u.String())
 	log.Printf(EnvConfig.ShorLink)
 	log.Printf(CmdConfig.ShorLink.Addr)
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		response = urlPrefix + req.Host + delimiter + EnvConfig.ShorLink + delimiter + id + delimiter
+		response = urlPrefix + req.Host + delimiter + EnvConfig.ShorLink + id
 	case CmdConfig.ShorLink.Addr != "":
-		response = urlPrefix + req.Host + delimiter + CmdConfig.ShorLink.Addr + delimiter + id + delimiter
+		response = urlPrefix + req.Host + delimiter + CmdConfig.ShorLink.Addr + id
 	default:
 		response = urlPrefix + req.Host + delimiter + id + delimiter
 	}
@@ -61,9 +62,9 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		id = strings.TrimPrefix(id, delimiter+EnvConfig.ShorLink+delimiter)
+		id = strings.TrimPrefix(id, delimiter+EnvConfig.ShorLink)
 	case CmdConfig.ShorLink.Addr != "":
-		id = strings.TrimPrefix(id, delimiter+CmdConfig.ShorLink.Addr+delimiter)
+		id = strings.TrimPrefix(id, delimiter+CmdConfig.ShorLink.Addr)
 	}
 
 	log.Printf("ID %s", id)
