@@ -3,8 +3,6 @@ package app
 import (
 	"errors"
 	"flag"
-	"log"
-	"net/url"
 	"strconv"
 	"strings"
 )
@@ -75,21 +73,11 @@ type ShorLink struct {
 }
 
 func (a *ShorLink) String() string {
-	a.normalize()
 	return a.Addr
 }
 
 func (a *ShorLink) Set(s string) error {
 	hp := strings.Split(s, ":")
 	a.Addr = hp[0]
-	a.normalize()
 	return nil
-}
-
-func (a *ShorLink) normalize() {
-	_, err := url.Parse(a.Addr)
-	log.Printf("flag -b {%s} is not a valid URL. Error: %v\n", a.Addr, err)
-	if err != nil {
-		a.Addr = ""
-	}
 }

@@ -33,9 +33,14 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		response = EnvConfig.ShorLink + delimiter + id + delimiter
+		//if IsUrl(EnvConfig.ShorLink) {
+		//	response = EnvConfig.ShorLink + delimiter + id + delimiter
+		//} else {
+		//	response = urlPrefix + req.Host + delimiter + EnvConfig.ShorLink + delimiter + id + delimiter
+		//}
+		response = urlPrefix + req.Host + EnvConfig.ShorLink + delimiter + id + delimiter
 	case CmdConfig.ShorLink.Addr != "":
-		response = CmdConfig.ShorLink.Addr + delimiter + id + delimiter
+		response = urlPrefix + req.Host + CmdConfig.ShorLink.Addr + delimiter + id + delimiter
 	default:
 		response = urlPrefix + req.Host + delimiter + id + delimiter
 	}
@@ -62,3 +67,8 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Location", origin)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
+
+//func IsUrl(str string) bool {
+//	u, err := url.Parse(str)
+//	return err == nil && u.Scheme != "" && u.Host != ""
+//}
