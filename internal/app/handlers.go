@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/google/uuid"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -32,6 +33,9 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	var response string
 
+	log.Printf(EnvConfig.ShorLink)
+	log.Printf(CmdConfig.ShorLink.Addr)
+
 	switch {
 	case EnvConfig.ShorLink != "":
 		response = urlPrefix + req.Host + delimiter + EnvConfig.ShorLink + delimiter + id + delimiter
@@ -40,6 +44,8 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 	default:
 		response = urlPrefix + req.Host + delimiter + id + delimiter
 	}
+
+	log.Printf(response)
 
 	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
@@ -55,10 +61,12 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		strings.TrimPrefix(id, delimiter+EnvConfig.ShorLink+delimiter)
+		id = strings.TrimPrefix(id, EnvConfig.ShorLink)
 	case CmdConfig.ShorLink.Addr != "":
-		strings.TrimPrefix(id, delimiter+CmdConfig.ShorLink.Addr+delimiter)
+		id = strings.TrimPrefix(id, CmdConfig.ShorLink.Addr)
 	}
+
+	log.Printf(id)
 
 	origin, err := inMemoryDB.GetByID(id)
 	if err != nil {
@@ -70,3 +78,8 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Location", origin)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
+
+//func IsUrl(str string) bool {
+//	u, err := url.Parse(str)
+//	return err == nil && u.Scheme != "" && u.Host != ""
+//}
