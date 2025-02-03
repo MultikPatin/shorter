@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/google/uuid"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -33,9 +32,6 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	var response string
 
-	log.Printf(EnvConfig.ShorLink)
-	log.Printf(CmdConfig.ShorLink.Addr)
-
 	switch {
 	case EnvConfig.ShorLink != "":
 		response = urlPrefix + req.Host + delimiter + EnvConfig.ShorLink + delimiter + id + delimiter
@@ -44,8 +40,6 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 	default:
 		response = urlPrefix + req.Host + delimiter + id + delimiter
 	}
-
-	log.Printf(response)
 
 	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
@@ -61,9 +55,9 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		strings.TrimPrefix(id, EnvConfig.ShorLink)
+		strings.TrimPrefix(id, delimiter+EnvConfig.ShorLink+delimiter)
 	case CmdConfig.ShorLink.Addr != "":
-		strings.TrimPrefix(id, CmdConfig.ShorLink.Addr)
+		strings.TrimPrefix(id, delimiter+CmdConfig.ShorLink.Addr+delimiter)
 	}
 
 	origin, err := inMemoryDB.GetByID(id)
