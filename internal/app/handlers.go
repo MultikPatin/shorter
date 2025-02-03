@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 var inMemoryDB = NewInMemoryDB()
@@ -24,13 +25,24 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Failed to generate UUID", http.StatusInternalServerError)
 		return
 	}
-	id, err := inMemoryDB.AddLink(ShortPre+u.String(), string(body))
+
+	key := u.String()
+	if !IsUrl(ShortPre) {
+		key = ShortPre + key
+	}
+
+	id, err := inMemoryDB.AddLink(key, string(body))
 	if err != nil {
 		http.Error(res, "Failed to add link", http.StatusInternalServerError)
 		return
 	}
 
-	response := urlPrefix + req.Host + delimiter + id + delimiter
+	response := ""
+	if !IsUrl(ShortPre) {
+		response = urlPrefix + req.Host + delimiter + id + delimiter
+	} else {
+		response = ShortPre + delimiter + id + delimiter
+	}
 
 	res.Header().Set("content-type", contentType)
 	res.WriteHeader(http.StatusCreated)
@@ -53,4 +65,9 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("content-type", contentType)
 	res.Header().Set("Location", origin)
 	res.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func IsUrl(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
