@@ -16,8 +16,10 @@ func main() {
 		log.Printf("Error: %v\n", err)
 	}
 	addr := app.EnvConfig.ServHost
+	app.ShortPre = app.EnvConfig.ShorLink
 	if addr == "" {
 		addr = app.CmdConfig.ServHost.String()
+		app.ShortPre = app.CmdConfig.ShorLink.Addr
 	}
 
 	r := app.GetRouter()
