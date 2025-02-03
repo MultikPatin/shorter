@@ -61,9 +61,9 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		id = strings.TrimPrefix(id, EnvConfig.ShorLink)
+		id = strings.TrimPrefix(id, delimiter+EnvConfig.ShorLink+delimiter)
 	case CmdConfig.ShorLink.Addr != "":
-		id = strings.TrimPrefix(id, CmdConfig.ShorLink.Addr)
+		id = strings.TrimPrefix(id, delimiter+CmdConfig.ShorLink.Addr+delimiter)
 	}
 
 	log.Printf("ID %s", id)
