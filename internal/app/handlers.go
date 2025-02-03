@@ -33,9 +33,9 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		response = urlPrefix + req.Host + delimiter + id + delimiter
+		response = EnvConfig.ShorLink + delimiter + id + delimiter
 	case CmdConfig.ShorLink.Addr != "":
-		response = urlPrefix + req.Host + delimiter + id + delimiter
+		response = CmdConfig.ShorLink.Addr + delimiter + id + delimiter
 	default:
 		response = urlPrefix + req.Host + delimiter + id + delimiter
 	}
