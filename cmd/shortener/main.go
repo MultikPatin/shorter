@@ -11,11 +11,12 @@ func main() {
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 	}
+	log.Printf("%v\n", app.CmdConfig)
 	err = app.EnvConfig.Parse()
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 	}
-
+	log.Printf("%v\n", app.CmdConfig)
 	addr := app.EnvConfig.ServHost
 	if addr == "" {
 		addr = app.CmdConfig.ServHost.String()

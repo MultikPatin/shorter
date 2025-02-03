@@ -33,11 +33,6 @@ func postLink(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case EnvConfig.ShorLink != "":
-		//if IsUrl(EnvConfig.ShorLink) {
-		//	response = EnvConfig.ShorLink + delimiter + id + delimiter
-		//} else {
-		//	response = urlPrefix + req.Host + delimiter + EnvConfig.ShorLink + delimiter + id + delimiter
-		//}
 		response = urlPrefix + req.Host + EnvConfig.ShorLink + delimiter + id + delimiter
 	case CmdConfig.ShorLink.Addr != "":
 		response = urlPrefix + req.Host + CmdConfig.ShorLink.Addr + delimiter + id + delimiter
