@@ -20,7 +20,7 @@ func (c *envConfig) Parse() error {
 	}
 	_, err = url.Parse(c.ShorLink)
 	if err != nil {
-		log.Printf("flag -b is not a valid URL. Error: %v\n", err)
+		log.Printf("flag -b {%s} is not a valid URL. Error: %v\n", c.ShorLink, err)
 		c.ShorLink = ""
 	}
 	return err
