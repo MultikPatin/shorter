@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var inMemoryDB = NewInMemoryDB()
@@ -58,7 +59,12 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	}
 	id := req.PathValue("id")
 
-	log.Printf(id)
+	switch {
+	case EnvConfig.ShorLink != "":
+		strings.TrimPrefix(id, EnvConfig.ShorLink)
+	case CmdConfig.ShorLink.Addr != "":
+		strings.TrimPrefix(id, CmdConfig.ShorLink.Addr)
+	}
 
 	origin, err := inMemoryDB.GetByID(id)
 	if err != nil {
@@ -70,8 +76,3 @@ func getLink(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Location", origin)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
-
-//func IsUrl(str string) bool {
-//	u, err := url.Parse(str)
-//	return err == nil && u.Scheme != "" && u.Host != ""
-//}
