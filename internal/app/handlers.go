@@ -26,9 +26,10 @@ func postLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := getResponseLink(u.String(), ShortPre, urlPrefix+r.Host)
+	key := getDbKey(u, ShortPre)
+	response := getResponseLink(key, ShortPre, urlPrefix+r.Host)
 
-	_, err = inMemoryDB.AddLink(u.String(), string(body))
+	_, err = inMemoryDB.AddLink(key, string(body))
 	if err != nil {
 		http.Error(w, "Failed to add link", http.StatusInternalServerError)
 		return
@@ -57,11 +58,18 @@ func getLink(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
+func getDbKey(u uuid.UUID, p string) string {
+	if IsURL(p) {
+		return u.String()
+	}
+	return p + u.String()
+}
+
 func getResponseLink(k string, p string, h string) string {
 	if IsURL(p) {
 		return p + delimiter + k + delimiter
 	}
-	return h + delimiter + p + k + delimiter
+	return h + delimiter + k + delimiter
 }
 
 func IsURL(str string) bool {
