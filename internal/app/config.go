@@ -8,12 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	urlPrefix   = "http://"
-	delimiter   = "/"
-	contentType = "text/plain; charset=utf-8"
-)
-
 type Config struct {
 	Addr            string
 	ShortLinkPrefix string

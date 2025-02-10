@@ -3,11 +3,17 @@ package app
 import (
 	"github.com/google/uuid"
 	"io"
+	"main/internal/db"
+	"main/internal/services"
 	"net/http"
-	"net/url"
 )
 
-var inMemoryDB = NewInMemoryDB()
+const (
+	urlPrefix   = "http://"
+	contentType = "text/plain; charset=utf-8"
+)
+
+var inMemoryDB = db.NewInMemoryDB()
 var ShortPre = ""
 
 func postLink(w http.ResponseWriter, r *http.Request) {
@@ -26,8 +32,8 @@ func postLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := getDBKey(u, ShortPre)
-	response := getResponseLink(key, ShortPre, urlPrefix+r.Host)
+	key := services.GetDBKey(u, ShortPre)
+	response := services.GetResponseLink(key, ShortPre, urlPrefix+r.Host)
 
 	_, err = inMemoryDB.AddLink(key, string(body))
 	if err != nil {
@@ -56,23 +62,4 @@ func getLink(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", contentType)
 	w.Header().Set("Location", origin)
 	w.WriteHeader(http.StatusTemporaryRedirect)
-}
-
-func getDBKey(u uuid.UUID, p string) string {
-	if IsURL(p) {
-		return u.String()
-	}
-	return p + u.String()
-}
-
-func getResponseLink(k string, p string, h string) string {
-	if IsURL(p) {
-		return p + delimiter + k + delimiter
-	}
-	return h + delimiter + k + delimiter
-}
-
-func IsURL(str string) bool {
-	u, err := url.Parse(str)
-	return err == nil && u.Scheme != "" && u.Host != ""
 }
