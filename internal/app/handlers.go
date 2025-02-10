@@ -26,7 +26,7 @@ func postLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := getDbKey(u, ShortPre)
+	key := getDBKey(u, ShortPre)
 	response := getResponseLink(key, ShortPre, urlPrefix+r.Host)
 
 	_, err = inMemoryDB.AddLink(key, string(body))
@@ -58,7 +58,7 @@ func getLink(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func getDbKey(u uuid.UUID, p string) string {
+func getDBKey(u uuid.UUID, p string) string {
 	if IsURL(p) {
 		return u.String()
 	}
