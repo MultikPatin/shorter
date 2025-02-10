@@ -58,11 +58,10 @@ func getLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func getResponseLink(k string, p string, h string) string {
-	key := delimiter + k + delimiter
 	if IsURL(p) {
-		return p + key
+		return p + delimiter + k + delimiter
 	}
-	return h + p + key
+	return h + delimiter + p + k + delimiter
 }
 
 func IsURL(str string) bool {
