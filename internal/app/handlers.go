@@ -10,60 +10,59 @@ import (
 var inMemoryDB = NewInMemoryDB()
 var ShortPre = ""
 
-func postLink(res http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodPost {
-		http.Error(res, "Only POST requests are allowed!", http.StatusMethodNotAllowed)
+func postLink(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST requests are allowed!", http.StatusMethodNotAllowed)
 		return
 	}
-	body, err := io.ReadAll(req.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(res, "Failed to read request body", http.StatusInternalServerError)
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
 	u, err := uuid.NewRandom()
 	if err != nil {
-		http.Error(res, "Failed to generate UUID", http.StatusInternalServerError)
+		http.Error(w, "Failed to generate UUID", http.StatusInternalServerError)
 		return
 	}
 
-	var key string
-	var response string
+	response := getResponseLink(u.String(), ShortPre, urlPrefix+r.Host)
 
-	if IsURL(ShortPre) {
-		key = u.String()
-		response = ShortPre + delimiter + key + delimiter
-	} else {
-		key = ShortPre + key
-		response = urlPrefix + req.Host + delimiter + key + delimiter
-	}
-
-	_, err = inMemoryDB.AddLink(key, string(body))
+	_, err = inMemoryDB.AddLink(u.String(), string(body))
 	if err != nil {
-		http.Error(res, "Failed to add link", http.StatusInternalServerError)
+		http.Error(w, "Failed to add link", http.StatusInternalServerError)
 		return
 	}
 
-	res.Header().Set("content-type", contentType)
-	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(response))
+	w.Header().Set("content-type", contentType)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(response))
 }
 
-func getLink(res http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.Error(res, "Only GET requests are allowed!", http.StatusMethodNotAllowed)
+func getLink(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Only GET requests are allowed!", http.StatusMethodNotAllowed)
 		return
 	}
-	id := req.PathValue("id")
+	id := r.PathValue("id")
 
 	origin, err := inMemoryDB.GetByID(id)
 	if err != nil {
-		http.Error(res, "Origin not found", http.StatusNotFound)
+		http.Error(w, "Origin not found", http.StatusNotFound)
 		return
 	}
 
-	res.Header().Set("content-type", contentType)
-	res.Header().Set("Location", origin)
-	res.WriteHeader(http.StatusTemporaryRedirect)
+	w.Header().Set("content-type", contentType)
+	w.Header().Set("Location", origin)
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func getResponseLink(k string, p string, h string) string {
+	key := delimiter + k + delimiter
+	if IsURL(p) {
+		return p + key
+	}
+	return h + p + key
 }
 
 func IsURL(str string) bool {
