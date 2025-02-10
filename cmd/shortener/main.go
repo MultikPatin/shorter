@@ -7,21 +7,12 @@ import (
 )
 
 func main() {
-	err := app.CmdConfig.Parse()
+	c, err := app.ParseConfig()
 	if err != nil {
-		log.Printf("Error: %v\n", err)
+		log.Fatal(err)
 	}
-	err = app.EnvConfig.Parse()
-	if err != nil {
-		log.Printf("Error: %v\n", err)
-	}
-	addr := app.EnvConfig.ServHost
-	app.ShortPre = app.EnvConfig.ShorLink
-	if addr == "" {
-		addr = app.CmdConfig.ServHost.String()
-		app.ShortPre = app.CmdConfig.ShorLink.Addr
-	}
+	app.ShortPre = c.ShortLinkPrefix
 
 	r := app.GetRouter()
-	log.Fatal(http.ListenAndServe(addr, r))
+	log.Fatal(http.ListenAndServe(c.Addr, r))
 }

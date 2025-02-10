@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"flag"
+	"github.com/caarlos0/env/v6"
 	"strconv"
 	"strings"
 )
@@ -13,9 +14,49 @@ const (
 	contentType = "text/plain; charset=utf-8"
 )
 
-var CmdConfig cmdConfig
+type Config struct {
+	Addr            string
+	ShortLinkPrefix string
+}
 
-func (c *cmdConfig) Parse() error {
+type envConfig struct {
+	Addr            string `env:"SERVER_ADDRESS,required"`
+	ShortLinkPrefix string `env:"BASE_URL,required"`
+}
+type cmdConfig struct {
+	ServHost ServHost
+	ShorLink ShorLink
+}
+type ServHost struct {
+	Host string
+	Port int
+}
+type ShorLink struct {
+	ShortLinkPrefix string
+}
+
+func ParseConfig() (*Config, error) {
+	cfg := &Config{}
+	if err := cfg.parseEnv(); err != nil {
+		if err := cfg.parseFlags(); err != nil {
+			return nil, err
+		}
+	}
+	return cfg, nil
+}
+
+func (c *Config) parseEnv() error {
+	cfg := &envConfig{}
+	err := env.Parse(cfg)
+	if err != nil {
+		return err
+	}
+	c.Addr = cfg.Addr
+	c.ShortLinkPrefix = cfg.ShortLinkPrefix
+	return nil
+}
+
+func (c *Config) parseFlags() error {
 	sv := new(ServHost)
 	_ = flag.Value(sv)
 	sh := new(ShorLink)
@@ -25,18 +66,9 @@ func (c *cmdConfig) Parse() error {
 	flag.Var(sh, "b", "short link server")
 	flag.Parse()
 
-	CmdConfig.ServHost = *sv
-	CmdConfig.ShorLink = *sh
+	c.Addr = sv.String()
+	c.ShortLinkPrefix = sh.String()
 	return nil
-}
-
-type cmdConfig struct {
-	ServHost ServHost
-	ShorLink ShorLink
-}
-type ServHost struct {
-	Host string
-	Port int
 }
 
 func (a *ServHost) String() string {
@@ -68,16 +100,12 @@ func (a *ServHost) normalize() {
 	}
 }
 
-type ShorLink struct {
-	Addr string
-}
-
 func (a *ShorLink) String() string {
-	return a.Addr
+	return a.ShortLinkPrefix
 }
 
 func (a *ShorLink) Set(s string) error {
 	hp := strings.Split(s, ":")
-	a.Addr = hp[0]
+	a.ShortLinkPrefix = hp[0]
 	return nil
 }
