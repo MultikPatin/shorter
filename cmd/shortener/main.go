@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"main/internal/app"
+	"main/internal/db"
 	"net/http"
 )
 
@@ -13,6 +14,9 @@ func main() {
 	}
 	app.ShortPre = c.ShortLinkPrefix
 
-	r := app.GetRouter()
+	d := db.NewInMemoryDB()
+	h := app.GetHeaders(d)
+	r := app.GetRouter(h)
+
 	log.Fatal(http.ListenAndServe(c.Addr, r))
 }
