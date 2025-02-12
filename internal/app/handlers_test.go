@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/google/uuid"
+	"main/internal/db"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -47,7 +48,11 @@ func TestPostLink(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
-			postLink(w, request)
+
+			d := db.NewInMemoryDB()
+			h := GetHeaders(d)
+
+			h.postLink(w, request)
 
 			res := w.Result()
 
@@ -101,7 +106,11 @@ func TestGetLink(t *testing.T) {
 				t.Fatalf("Failed to generate UUID")
 				return
 			}
-			id, err := inMemoryDB.AddLink(u.String(), urlPrefix+"test.com")
+
+			d := db.NewInMemoryDB()
+			h := GetHeaders(d)
+
+			id, err := d.AddLink(u.String(), urlPrefix+"test.com")
 			if err != nil {
 				t.Fatalf("Failed to add link")
 				return
@@ -111,7 +120,7 @@ func TestGetLink(t *testing.T) {
 			request.SetPathValue("id", id)
 
 			w := httptest.NewRecorder()
-			getLink(w, request)
+			h.getLink(w, request)
 
 			res := w.Result()
 
