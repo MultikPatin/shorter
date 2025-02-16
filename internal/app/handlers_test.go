@@ -50,7 +50,7 @@ func TestPostLink(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			d := db.NewInMemoryDB()
-			h := GetHeaders(d)
+			h := GetHandlers(d)
 
 			h.postLink(w, request)
 
@@ -108,7 +108,7 @@ func TestGetLink(t *testing.T) {
 			}
 
 			d := db.NewInMemoryDB()
-			h := GetHeaders(d)
+			h := GetHandlers(d)
 
 			id, err := d.AddLink(u.String(), urlPrefix+"test.com")
 			if err != nil {

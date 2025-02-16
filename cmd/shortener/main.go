@@ -1,22 +1,38 @@
 package main
 
 import (
-	"log"
+	"go.uber.org/zap"
 	"main/internal/app"
 	"main/internal/db"
 	"net/http"
 )
 
+var sugar zap.SugaredLogger
+
 func main() {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+	sugar = *logger.Sugar()
+
 	c, err := app.ParseConfig()
 	if err != nil {
-		log.Fatal(err)
+		sugar.Fatal(err)
 	}
 	app.ShortPre = c.ShortLinkPrefix
 
 	d := db.NewInMemoryDB()
-	h := app.GetHeaders(d)
-	r := app.GetRouter(h)
+	h := app.GetHandlers(d)
+	r := app.GetRouters(h)
 
-	log.Fatal(http.ListenAndServe(c.Addr, r))
+	sugar.Infow(
+		"Starting server",
+		"addr", c.Addr,
+	)
+
+	if err := http.ListenAndServe(c.Addr, r); err != nil {
+		sugar.Fatalw(err.Error(), "event", "start server")
+	}
 }

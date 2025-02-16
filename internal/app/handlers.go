@@ -17,19 +17,19 @@ type DB interface {
 	GetByID(id string) (string, error)
 }
 
-func GetHeaders(db DB) *MyHeaders {
-	return &MyHeaders{
+func GetHandlers(db DB) *MyHandlers {
+	return &MyHandlers{
 		database: db,
 	}
 }
 
-type MyHeaders struct {
+type MyHandlers struct {
 	database DB
 }
 
 var ShortPre = ""
 
-func (h *MyHeaders) postLink(w http.ResponseWriter, r *http.Request) {
+func (h *MyHandlers) postLink(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
@@ -59,7 +59,7 @@ func (h *MyHeaders) postLink(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func (h *MyHeaders) getLink(w http.ResponseWriter, r *http.Request) {
+func (h *MyHandlers) getLink(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
