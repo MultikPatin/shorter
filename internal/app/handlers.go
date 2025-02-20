@@ -61,7 +61,7 @@ func (h *MyHandlers) postJsonLink(w http.ResponseWriter, r *http.Request) {
 	key := services.GetDBKey(u, ShortPre)
 	response.Result = services.GetResponseLink(key, ShortPre, urlPrefix+r.Host)
 
-	_, err = h.database.AddLink(key, shorten.Url)
+	_, err = h.database.AddLink(key, shorten.URL)
 	if err != nil {
 		http.Error(w, "Failed to add link", http.StatusInternalServerError)
 		return
