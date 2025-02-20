@@ -32,7 +32,7 @@ type MyHandlers struct {
 
 var ShortPre = ""
 
-func (h *MyHandlers) postJsonLink(w http.ResponseWriter, r *http.Request) {
+func (h *MyHandlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return

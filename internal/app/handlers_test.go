@@ -124,7 +124,7 @@ func TestPostJsonLink(t *testing.T) {
 			d := database.NewInMemoryDB()
 			h := GetHandlers(d)
 
-			h.postJsonLink(w, request)
+			h.postJSONLink(w, request)
 
 			res := w.Result()
 

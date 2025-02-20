@@ -8,7 +8,7 @@ import (
 
 type Handlers interface {
 	postLink(w http.ResponseWriter, r *http.Request)
-	postJsonLink(w http.ResponseWriter, r *http.Request)
+	postJSONLink(w http.ResponseWriter, r *http.Request)
 	getLink(w http.ResponseWriter, r *http.Request)
 }
 
@@ -22,7 +22,7 @@ func GetRouters(h Handlers) *chi.Mux {
 			r.Get("/", h.getLink)
 		})
 		r.Route("/api", func(r chi.Router) {
-			r.Post("/shorten", h.postJsonLink)
+			r.Post("/shorten", h.postJSONLink)
 		})
 	})
 	return r
