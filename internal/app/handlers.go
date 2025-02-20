@@ -1,6 +1,8 @@
 package app
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/google/uuid"
 	"io"
 	"main/internal/services"
@@ -8,8 +10,9 @@ import (
 )
 
 const (
-	urlPrefix   = "http://"
-	contentType = "text/plain; charset=utf-8"
+	urlPrefix       = "http://"
+	textContentType = "text/plain; charset=utf-8"
+	jsonContentType = "application/json"
 )
 
 type DB interface {
@@ -28,6 +31,52 @@ type MyHandlers struct {
 }
 
 var ShortPre = ""
+
+func (h *MyHandlers) postJsonLink(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	var shorten ShortenRequest
+	var response ShortenResponse
+
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = json.Unmarshal(buf.Bytes(), &shorten); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	u, err := uuid.NewRandom()
+	if err != nil {
+		http.Error(w, "Failed to generate UUID", http.StatusInternalServerError)
+		return
+	}
+
+	key := services.GetDBKey(u, ShortPre)
+	response.Result = services.GetResponseLink(key, ShortPre, urlPrefix+r.Host)
+
+	_, err = h.database.AddLink(key, shorten.Url)
+	if err != nil {
+		http.Error(w, "Failed to add link", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("content-type", jsonContentType)
+	w.WriteHeader(http.StatusCreated)
+	w.Write(resp)
+}
 
 func (h *MyHandlers) postLink(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -54,7 +103,7 @@ func (h *MyHandlers) postLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", contentType)
+	w.Header().Set("content-type", textContentType)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
 }
@@ -72,7 +121,7 @@ func (h *MyHandlers) getLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", contentType)
+	w.Header().Set("content-type", textContentType)
 	w.Header().Set("Location", origin)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }

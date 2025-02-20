@@ -3,7 +3,7 @@ package main
 import (
 	"go.uber.org/zap"
 	"main/internal/app"
-	"main/internal/db"
+	"main/internal/database"
 	"net/http"
 )
 
@@ -23,7 +23,7 @@ func main() {
 	}
 	app.ShortPre = c.ShortLinkPrefix
 
-	d := db.NewInMemoryDB()
+	d := database.NewInMemoryDB()
 	h := app.GetHandlers(d)
 	r := app.GetRouters(h)
 
