@@ -99,7 +99,7 @@ func TestPostJsonLink(t *testing.T) {
 			req: req{
 				method: http.MethodGet,
 			},
-			body: `{}`,
+			body: ``,
 		},
 		{
 			name: "wrong body",

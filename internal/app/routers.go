@@ -15,6 +15,7 @@ type Handlers interface {
 func GetRouters(h Handlers) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.AccessLogger)
+	r.Use(middleware.GZipper)
 
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", h.postLink)
