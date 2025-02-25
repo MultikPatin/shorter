@@ -11,6 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	filename = "test.json"
+)
+
 func TestPostLink(t *testing.T) {
 	type want struct {
 		contentType string
@@ -50,7 +54,10 @@ func TestPostLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			d := database.NewInMemoryDB()
+			producerFS, _ := database.NewFileStorage(filename, true)
+			consumerFS, _ := database.NewFileStorage(filename, false)
+
+			d := database.NewInMemoryDB(producerFS, consumerFS)
 			h := GetHandlers(d)
 
 			h.postLink(w, request)
@@ -121,7 +128,10 @@ func TestPostJsonLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			d := database.NewInMemoryDB()
+			producerFS, _ := database.NewFileStorage(filename, true)
+			consumerFS, _ := database.NewFileStorage(filename, false)
+
+			d := database.NewInMemoryDB(producerFS, consumerFS)
 			h := GetHandlers(d)
 
 			h.postJSONLink(w, request)
@@ -179,7 +189,10 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			d := database.NewInMemoryDB()
+			producerFS, _ := database.NewFileStorage(filename, true)
+			consumerFS, _ := database.NewFileStorage(filename, false)
+
+			d := database.NewInMemoryDB(producerFS, consumerFS)
 			h := GetHandlers(d)
 
 			id, err := d.AddLink(u.String(), urlPrefix+"test.com")
