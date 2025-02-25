@@ -36,10 +36,8 @@ func NewFileStorage(path string, isProducer bool) (*FileStorage, error) {
 		fileMode = os.O_RDONLY | os.O_CREATE
 	}
 
-	dir := filepath.Dir(path)
-
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		if err := os.MkdirAll(path, 0755); err != nil {
 			return nil, fmt.Errorf("не удалось создать директорию: %w", err)
 		}
 	}
