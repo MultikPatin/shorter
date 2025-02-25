@@ -66,7 +66,7 @@ func (c *Config) parseFlags() error {
 	sh := new(ShorLink)
 	_ = flag.Value(sh)
 
-	flag.StringVar(&c.StorageFilePaths, "f", "", "Имя файла")
+	flag.StringVar(&c.StorageFilePaths, "f", "", "Path to storage file")
 
 	flag.Var(sv, "a", "Net address host:port")
 	flag.Var(sh, "b", "short link server")

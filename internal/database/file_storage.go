@@ -41,7 +41,7 @@ func NewFileStorage(filename string, isProducer bool) (*FileStorage, error) {
 	fs := &FileStorage{
 		filename:   filename,
 		file:       file,
-		writer:     bufio.NewWriter(file),
+		writer:     bufio.NewWriterSize(file, 4096),
 		scanner:    bufio.NewScanner(file),
 		isProducer: isProducer,
 	}
@@ -53,16 +53,20 @@ func (fs *FileStorage) WriteEvent(event *Event) error {
 	if !fs.isProducer {
 		return errors.New("cannot write in consumer mode")
 	}
+
 	data, err := json.Marshal(&event)
 	if err != nil {
 		return err
 	}
+
 	if _, err := fs.writer.Write(data); err != nil {
 		return err
 	}
+
 	if err := fs.writer.WriteByte('\n'); err != nil {
 		return err
 	}
+
 	return fs.writer.Flush()
 }
 
@@ -74,8 +78,7 @@ func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
 	var events []*Event
 
 	for fs.scanner.Scan() {
-		data := fs.scanner.Bytes()
-		event, err := parseLineToEvent(data)
+		event, err := parseLineToEvent(fs.scanner.Bytes())
 		if err != nil {
 			return nil, err
 		}
@@ -85,10 +88,14 @@ func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
 	if err := fs.scanner.Err(); err != nil {
 		return nil, err
 	}
+
 	return events, nil
 }
 
 func (fs *FileStorage) Close() error {
+	if err := fs.writer.Flush(); err != nil {
+		return err
+	}
 	return fs.file.Close()
 }
 
