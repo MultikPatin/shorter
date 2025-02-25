@@ -10,7 +10,7 @@ type producer interface {
 }
 
 type consumer interface {
-	ReadEvent() ([]*Event, error)
+	ReadAllEvents() ([]*Event, error)
 	Close() error
 }
 
@@ -34,7 +34,7 @@ func NewInMemoryDB(producerFS, consumerFS fileStorage) *InMemoryDB {
 }
 
 func (db *InMemoryDB) LoadFromFile() error {
-	events, err := db.consumerFS.ReadEvent()
+	events, err := db.consumerFS.ReadAllEvents()
 	if err != nil {
 		return err
 	}

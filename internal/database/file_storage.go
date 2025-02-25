@@ -20,7 +20,7 @@ type Event struct {
 type FileStorage struct {
 	filename   string
 	file       *os.File
-	encoder    *json.Encoder
+	writer     *bufio.Writer
 	scanner    *bufio.Scanner
 	isProducer bool
 }
@@ -41,7 +41,7 @@ func NewFileStorage(filename string, isProducer bool) (*FileStorage, error) {
 	fs := &FileStorage{
 		filename:   filename,
 		file:       file,
-		encoder:    json.NewEncoder(file),
+		writer:     bufio.NewWriter(file),
 		scanner:    bufio.NewScanner(file),
 		isProducer: isProducer,
 	}
@@ -53,10 +53,20 @@ func (fs *FileStorage) WriteEvent(event *Event) error {
 	if !fs.isProducer {
 		return errors.New("cannot write in consumer mode")
 	}
-	return fs.encoder.Encode(event)
+	data, err := json.Marshal(&event)
+	if err != nil {
+		return err
+	}
+	if _, err := fs.writer.Write(data); err != nil {
+		return err
+	}
+	if err := fs.writer.WriteByte('\n'); err != nil {
+		return err
+	}
+	return fs.writer.Flush()
 }
 
-func (fs *FileStorage) ReadEvent() ([]*Event, error) {
+func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
 	if fs.isProducer {
 		return nil, errors.New("cannot read in producer mode")
 	}
@@ -64,8 +74,8 @@ func (fs *FileStorage) ReadEvent() ([]*Event, error) {
 	var events []*Event
 
 	for fs.scanner.Scan() {
-		line := fs.scanner.Text()
-		event, err := parseLineToEvent(line)
+		data := fs.scanner.Bytes()
+		event, err := parseLineToEvent(data)
 		if err != nil {
 			return nil, err
 		}
@@ -82,9 +92,9 @@ func (fs *FileStorage) Close() error {
 	return fs.file.Close()
 }
 
-func parseLineToEvent(line string) (*Event, error) {
+func parseLineToEvent(data []byte) (*Event, error) {
 	event := &Event{}
-	if err := json.Unmarshal([]byte(line), event); err != nil {
+	if err := json.Unmarshal(data, event); err != nil {
 		return nil, err
 	}
 	return event, nil

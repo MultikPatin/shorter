@@ -4,13 +4,12 @@ import (
 	"errors"
 	"flag"
 	"github.com/caarlos0/env/v6"
-	"log"
 	"strconv"
 	"strings"
 )
 
 const (
-	defaultStorageFilePath = "shorter.json"
+	defaultStorageFilePath = "shorter"
 )
 
 type Config struct {
@@ -58,7 +57,6 @@ func (c *Config) parseEnv() error {
 	c.Addr = cfg.Addr
 	c.ShortLinkPrefix = cfg.ShortLinkPrefix
 	c.StorageFilePaths = cfg.StorageFilePaths
-	log.Println("parseEnv", c)
 	return nil
 }
 
@@ -76,7 +74,6 @@ func (c *Config) parseFlags() error {
 
 	c.Addr = sv.String()
 	c.ShortLinkPrefix = sh.String()
-	log.Println("parseFlags", c)
 	return nil
 }
 
