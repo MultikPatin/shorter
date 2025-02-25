@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-const (
-	defaultStorageFilePath = "shorter"
-)
-
 var sugar zap.SugaredLogger
 
 type Config struct {
@@ -55,9 +51,6 @@ func ParseConfig() (*Config, error) {
 		if err := cfg.parseFlags(); err != nil {
 			return nil, err
 		}
-	}
-	if cfg.StorageFilePaths == "" {
-		cfg.StorageFilePaths = defaultStorageFilePath
 	}
 	return cfg, nil
 }

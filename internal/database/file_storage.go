@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	perm = 0666
+	perm     = 0666
+	fileName = "shorter"
 )
 
 type Event struct {
@@ -43,7 +44,9 @@ func NewFileStorage(path string, isProducer bool) (*FileStorage, error) {
 		}
 	}
 
-	file, err := os.OpenFile(path, fileMode, perm)
+	filename := filepath.Join(path, fileName)
+
+	file, err := os.OpenFile(filename, fileMode, perm)
 	if err != nil {
 		return nil, err
 	}
