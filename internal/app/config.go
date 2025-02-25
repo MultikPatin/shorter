@@ -24,7 +24,7 @@ type Config struct {
 type envConfig struct {
 	StorageFilePaths string `env:"FILE_STORAGE_PATH"`
 	Addr             string `env:"SERVER_ADDRESS,required"`
-	ShortLinkPrefix  string `env:"BASE_URL,required"`
+	ShortLinkPrefix  string `env:"BASE_URL"`
 }
 type cmdConfig struct {
 	ServHost ServHost
