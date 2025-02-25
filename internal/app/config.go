@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"github.com/caarlos0/env/v6"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -19,7 +20,7 @@ type Config struct {
 }
 
 type envConfig struct {
-	StorageFilePaths string `env:"STORAGE_FILE_PATHS"`
+	StorageFilePaths string `env:"FILE_STORAGE_PATH"`
 	Addr             string `env:"SERVER_ADDRESS,required"`
 	ShortLinkPrefix  string `env:"BASE_URL,required"`
 }
@@ -57,6 +58,7 @@ func (c *Config) parseEnv() error {
 	c.Addr = cfg.Addr
 	c.ShortLinkPrefix = cfg.ShortLinkPrefix
 	c.StorageFilePaths = cfg.StorageFilePaths
+	log.Println("parseEnv", c)
 	return nil
 }
 
@@ -74,6 +76,7 @@ func (c *Config) parseFlags() error {
 
 	c.Addr = sv.String()
 	c.ShortLinkPrefix = sh.String()
+	log.Println("parseFlags", c)
 	return nil
 }
 
