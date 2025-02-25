@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	defaultStorageFilePath = "shorter"
+	defaultStorageFilePath = "shorter.json"
 )
 
 var sugar zap.SugaredLogger

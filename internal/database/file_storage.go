@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	perm     = 0666
-	fileName = "shorter"
+	perm = 0666
 )
 
 type Event struct {
