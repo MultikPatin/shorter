@@ -62,6 +62,10 @@ func (c *Config) parseEnv() error {
 	cfg := &envConfig{}
 	err := env.Parse(cfg)
 	if err != nil {
+		sugar.Info(
+			"Parsed Env",
+			err,
+		)
 		return err
 	}
 	c.Addr = cfg.Addr
