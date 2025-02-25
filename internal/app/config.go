@@ -5,8 +5,13 @@ import (
 	"flag"
 	"github.com/caarlos0/env/v6"
 	"go.uber.org/zap"
+	"path/filepath"
 	"strconv"
 	"strings"
+)
+
+const (
+	defaultStorageFilePath = "shorter"
 )
 
 var sugar zap.SugaredLogger
@@ -52,6 +57,7 @@ func ParseConfig() (*Config, error) {
 			return nil, err
 		}
 	}
+	cfg.StorageFilePaths = filepath.Join(cfg.StorageFilePaths, defaultStorageFilePath)
 	return cfg, nil
 }
 
