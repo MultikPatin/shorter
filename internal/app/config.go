@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"github.com/caarlos0/env/v6"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 )
@@ -11,6 +12,8 @@ import (
 const (
 	defaultStorageFilePath = "shorter"
 )
+
+var sugar zap.SugaredLogger
 
 type Config struct {
 	Addr             string
@@ -36,6 +39,13 @@ type ShorLink struct {
 }
 
 func ParseConfig() (*Config, error) {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+	sugar = *logger.Sugar()
+
 	cfg := &Config{}
 	if err := cfg.parseEnv(); err != nil {
 		if err := cfg.parseFlags(); err != nil {
@@ -57,6 +67,10 @@ func (c *Config) parseEnv() error {
 	c.Addr = cfg.Addr
 	c.ShortLinkPrefix = cfg.ShortLinkPrefix
 	c.StorageFilePaths = cfg.StorageFilePaths
+	sugar.Info(
+		"Parsed Env",
+		c,
+	)
 	return nil
 }
 
@@ -74,6 +88,10 @@ func (c *Config) parseFlags() error {
 
 	c.Addr = sv.String()
 	c.ShortLinkPrefix = sh.String()
+	sugar.Info(
+		"Parsed Flags",
+		c,
+	)
 	return nil
 }
 
