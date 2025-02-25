@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -25,21 +27,29 @@ type FileStorage struct {
 	isProducer bool
 }
 
-func NewFileStorage(filename string, isProducer bool) (*FileStorage, error) {
+func NewFileStorage(path string, isProducer bool) (*FileStorage, error) {
 	var fileMode int
 	if isProducer {
-		fileMode = os.O_WRONLY | os.O_CREATE | os.O_APPEND
+		fileMode = os.O_RDWR | os.O_CREATE | os.O_APPEND
 	} else {
 		fileMode = os.O_RDONLY | os.O_CREATE
 	}
 
-	file, err := os.OpenFile(filename, fileMode, perm)
+	dir := filepath.Dir(path)
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return nil, fmt.Errorf("не удалось создать директорию: %w", err)
+		}
+	}
+
+	file, err := os.OpenFile(path, fileMode, perm)
 	if err != nil {
 		return nil, err
 	}
 
 	fs := &FileStorage{
-		filename:   filename,
+		filename:   path,
 		file:       file,
 		writer:     bufio.NewWriterSize(file, 4096),
 		scanner:    bufio.NewScanner(file),
