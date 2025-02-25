@@ -8,14 +8,20 @@ import (
 	"strings"
 )
 
+const (
+	defaultStorageFilePath = "shorter.json"
+)
+
 type Config struct {
-	Addr            string
-	ShortLinkPrefix string
+	Addr             string
+	ShortLinkPrefix  string
+	StorageFilePaths string
 }
 
 type envConfig struct {
-	Addr            string `env:"SERVER_ADDRESS,required"`
-	ShortLinkPrefix string `env:"BASE_URL,required"`
+	StorageFilePaths string `env:"STORAGE_FILE_PATHS"`
+	Addr             string `env:"SERVER_ADDRESS,required"`
+	ShortLinkPrefix  string `env:"BASE_URL,required"`
 }
 type cmdConfig struct {
 	ServHost ServHost
@@ -35,6 +41,9 @@ func ParseConfig() (*Config, error) {
 		if err := cfg.parseFlags(); err != nil {
 			return nil, err
 		}
+	}
+	if cfg.StorageFilePaths == "" {
+		cfg.StorageFilePaths = defaultStorageFilePath
 	}
 	return cfg, nil
 }

@@ -15,19 +15,19 @@ const (
 	jsonContentType = "application/json"
 )
 
-type DB interface {
+type dataBase interface {
 	AddLink(id string, link string) (string, error)
 	GetByID(id string) (string, error)
 }
 
-func GetHandlers(db DB) *MyHandlers {
+func GetHandlers(db dataBase) *MyHandlers {
 	return &MyHandlers{
 		database: db,
 	}
 }
 
 type MyHandlers struct {
-	database DB
+	database dataBase
 }
 
 var ShortPre = ""

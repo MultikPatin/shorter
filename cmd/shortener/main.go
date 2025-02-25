@@ -19,11 +19,48 @@ func main() {
 
 	c, err := app.ParseConfig()
 	if err != nil {
-		sugar.Fatal(err)
+		sugar.Error(err)
 	}
-	app.ShortPre = c.ShortLinkPrefix
 
-	d := database.NewInMemoryDB()
+	producerFS, err := database.NewFileStorage(c.StorageFilePaths, true)
+	if err != nil {
+		sugar.Infow(
+			"File storage",
+			"error", err.Error(),
+		)
+	} else {
+		sugar.Infow(
+			"File producerFS created",
+			"path", c.StorageFilePaths,
+		)
+	}
+	defer producerFS.Close()
+
+	consumerFS, err := database.NewFileStorage(c.StorageFilePaths, false)
+	if err != nil {
+		sugar.Infow(
+			"File storage",
+			"error", err.Error(),
+		)
+	} else {
+		sugar.Infow(
+			"File consumerFS created",
+			"path", c.StorageFilePaths,
+		)
+	}
+	defer consumerFS.Close()
+
+	d := database.NewInMemoryDB(producerFS, consumerFS)
+
+	err = d.LoadFromFile()
+	if err != nil {
+		sugar.Infow(
+			"Load in memory DB",
+			"error", err.Error(),
+		)
+	}
+
+	app.ShortPre = c.ShortLinkPrefix
 	h := app.GetHandlers(d)
 	r := app.GetRouters(h)
 
