@@ -27,8 +27,9 @@ type envConfig struct {
 	ShortLinkPrefix  string `env:"BASE_URL"`
 }
 type cmdConfig struct {
-	ServHost ServHost
-	ShorLink ShorLink
+	ServHost    ServHost
+	ShorLink    ShorLink
+	FileStorage FileStorage
 }
 type ServHost struct {
 	Host string
@@ -36,6 +37,9 @@ type ServHost struct {
 }
 type ShorLink struct {
 	ShortLinkPrefix string
+}
+type FileStorage struct {
+	FilePath string
 }
 
 func ParseConfig() (*Config, error) {
@@ -62,10 +66,6 @@ func (c *Config) parseEnv() error {
 	cfg := &envConfig{}
 	err := env.Parse(cfg)
 	if err != nil {
-		sugar.Info(
-			"Parsed Env",
-			err,
-		)
 		return err
 	}
 	c.Addr = cfg.Addr
@@ -83,15 +83,17 @@ func (c *Config) parseFlags() error {
 	_ = flag.Value(sv)
 	sh := new(ShorLink)
 	_ = flag.Value(sh)
-
-	flag.StringVar(&c.StorageFilePaths, "f", "", "Path to storage file")
+	fs := new(FileStorage)
+	_ = flag.Value(fs)
 
 	flag.Var(sv, "a", "Net address host:port")
 	flag.Var(sh, "b", "short link server")
+	flag.Var(fs, "f", "Path to storage file")
 	flag.Parse()
 
 	c.Addr = sv.String()
 	c.ShortLinkPrefix = sh.String()
+	c.StorageFilePaths = fs.String()
 	sugar.Info(
 		"Parsed Flags",
 		c,
@@ -135,5 +137,15 @@ func (a *ShorLink) String() string {
 func (a *ShorLink) Set(s string) error {
 	hp := strings.Split(s, ":")
 	a.ShortLinkPrefix = hp[0]
+	return nil
+}
+
+func (a *FileStorage) String() string {
+	return a.FilePath
+}
+
+func (a *FileStorage) Set(s string) error {
+	hp := strings.Split(s, ":")
+	a.FilePath = hp[0]
 	return nil
 }
