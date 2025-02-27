@@ -5,7 +5,6 @@ import (
 	"flag"
 	"github.com/caarlos0/env/v6"
 	"go.uber.org/zap"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -70,9 +69,9 @@ func ParseConfig() (*Config, error) {
 		cfg.ShortLinkPrefix = envCfg.ShortLinkPrefix
 	}
 	if envCfg.StorageFilePaths == "" {
-		cfg.StorageFilePaths = filepath.Join(cmdCfg.StorageFilePaths)
+		cfg.StorageFilePaths = cmdCfg.StorageFilePaths
 	} else {
-		cfg.StorageFilePaths = filepath.Join(envCfg.StorageFilePaths)
+		cfg.StorageFilePaths = envCfg.StorageFilePaths
 	}
 	return cfg, nil
 }
