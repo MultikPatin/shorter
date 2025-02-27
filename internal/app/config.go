@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/caarlos0/env/v6"
 	"go.uber.org/zap"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -25,7 +26,7 @@ type Config struct {
 type envConfig struct {
 	StorageFilePaths string `env:"FILE_STORAGE_PATH"`
 	Addr             string `env:"SERVER_ADDRESS,required"`
-	ShortLinkPrefix  string `env:"BASE_URL"`
+	ShortLinkPrefix  string `env:"BASE_URL,required"`
 }
 type cmdConfig struct {
 	ServHost    ServHost
@@ -57,6 +58,10 @@ func ParseConfig() (*Config, error) {
 			return nil, err
 		}
 	}
+	sugar.Info(
+		"Parsed Env",
+		cfg,
+	)
 	cfg.StorageFilePaths = filepath.Join(cfg.StorageFilePaths, defaultStorageFilePath)
 	return cfg, nil
 }
@@ -84,6 +89,12 @@ func (c *Config) parseFlags() error {
 	_ = flag.Value(sh)
 	fs := new(FileStorage)
 	_ = flag.Value(fs)
+
+	args := os.Args
+	sugar.Info(
+		"OS Args",
+		args,
+	)
 
 	flag.Var(sv, "a", "Net address host:port")
 	flag.Var(sh, "b", "short link server")
