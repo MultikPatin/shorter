@@ -55,7 +55,6 @@ func ParseConfig() (*Config, error) {
 			"error", err.Error(),
 		)
 	}
-
 	cmdCfg, err := parseCmd()
 	if err != nil {
 		sugar.Infow(
@@ -94,14 +93,15 @@ func parseEnv() (*envConfig, error) {
 func parseCmd() (*cmdConfig, error) {
 	cfg := &cmdConfig{}
 
-	sv := new(ServHost)
-	_ = flag.Value(sv)
+	sh := new(ServHost)
+	_ = flag.Value(sh)
 
-	flag.Var(sv, "a", "Net address host:port")
 	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "short link server")
 	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
+	flag.Var(sh, "a", "Net address host:port")
+	flag.Parse()
 
-	cfg.Addr = sv.String()
+	cfg.Addr = sh.String()
 	return cfg, nil
 }
 
