@@ -10,10 +10,6 @@ import (
 	"strings"
 )
 
-const (
-	defaultStorageFilePath = "shorter.json"
-)
-
 var sugar zap.SugaredLogger
 
 type Config struct {
@@ -74,9 +70,9 @@ func ParseConfig() (*Config, error) {
 		cfg.ShortLinkPrefix = envCfg.ShortLinkPrefix
 	}
 	if envCfg.StorageFilePaths == "" {
-		cfg.StorageFilePaths = filepath.Join(cmdCfg.StorageFilePaths, defaultStorageFilePath)
+		cfg.StorageFilePaths = filepath.Join(cmdCfg.StorageFilePaths)
 	} else {
-		cfg.StorageFilePaths = filepath.Join(envCfg.StorageFilePaths, defaultStorageFilePath)
+		cfg.StorageFilePaths = filepath.Join(envCfg.StorageFilePaths)
 	}
 	return cfg, nil
 }
