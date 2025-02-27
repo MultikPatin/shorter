@@ -5,7 +5,6 @@ import (
 	"flag"
 	"github.com/caarlos0/env/v6"
 	"go.uber.org/zap"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -25,23 +24,18 @@ type Config struct {
 
 type envConfig struct {
 	StorageFilePaths string `env:"FILE_STORAGE_PATH"`
-	Addr             string `env:"SERVER_ADDRESS,required"`
-	ShortLinkPrefix  string `env:"BASE_URL,required"`
+	Addr             string `env:"SERVER_ADDRESS"`
+	ShortLinkPrefix  string `env:"BASE_URL"`
 }
 type cmdConfig struct {
-	ServHost    ServHost
-	ShorLink    ShorLink
-	FileStorage FileStorage
+	Addr             string
+	StorageFilePaths string
+	ShortLinkPrefix  string
 }
+
 type ServHost struct {
 	Host string
 	Port int
-}
-type ShorLink struct {
-	ShortLinkPrefix string
-}
-type FileStorage struct {
-	FilePath string
 }
 
 func ParseConfig() (*Config, error) {
@@ -53,68 +47,62 @@ func ParseConfig() (*Config, error) {
 	sugar = *logger.Sugar()
 
 	cfg := &Config{}
-	if err := cfg.parseEnv(); err != nil {
-		if err := cfg.parseFlags(); err != nil {
-			return nil, err
-		}
+
+	envCfg, err := parseEnv()
+	if err != nil {
+		sugar.Infow(
+			"Parsed Env",
+			"error", err.Error(),
+		)
 	}
-	sugar.Info(
-		"Parsed Env",
-		cfg,
-	)
-	cfg.StorageFilePaths = filepath.Join(cfg.StorageFilePaths, defaultStorageFilePath)
+
+	cmdCfg, err := parseCmd()
+	if err != nil {
+		sugar.Infow(
+			"Parsed CMD",
+			"error", err.Error(),
+		)
+	}
+
+	if envCfg.Addr == "" {
+		cfg.Addr = cmdCfg.Addr
+	} else {
+		cfg.Addr = envCfg.Addr
+	}
+	if envCfg.ShortLinkPrefix == "" {
+		cfg.ShortLinkPrefix = cmdCfg.ShortLinkPrefix
+	} else {
+		cfg.ShortLinkPrefix = envCfg.ShortLinkPrefix
+	}
+	if envCfg.StorageFilePaths == "" {
+		cfg.StorageFilePaths = filepath.Join(cmdCfg.StorageFilePaths, defaultStorageFilePath)
+	} else {
+		cfg.StorageFilePaths = filepath.Join(envCfg.StorageFilePaths, defaultStorageFilePath)
+	}
 	return cfg, nil
 }
 
-func (c *Config) parseEnv() error {
-	path := os.Getenv("FILE_STORAGE_PATH")
-	sugar.Info(
-		"FILE_STORAGE_PATH",
-		path,
-	)
-
+func parseEnv() (*envConfig, error) {
 	cfg := &envConfig{}
 	err := env.Parse(cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	c.Addr = cfg.Addr
-	c.ShortLinkPrefix = cfg.ShortLinkPrefix
-	c.StorageFilePaths = cfg.StorageFilePaths
-	sugar.Info(
-		"Parsed Env",
-		c,
-	)
-	return nil
+	return cfg, nil
 }
 
-func (c *Config) parseFlags() error {
+func parseCmd() (*cmdConfig, error) {
+	cfg := &cmdConfig{}
+
 	sv := new(ServHost)
 	_ = flag.Value(sv)
-	sh := new(ShorLink)
-	_ = flag.Value(sh)
-	fs := new(FileStorage)
-	_ = flag.Value(fs)
-
-	args := os.Args
-	sugar.Info(
-		"OS Args",
-		args,
-	)
 
 	flag.Var(sv, "a", "Net address host:port")
-	flag.Var(sh, "b", "short link server")
-	flag.Var(fs, "f", "Path to storage file")
-	flag.Parse()
+	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "short link server")
+	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
 
-	c.Addr = sv.String()
-	c.ShortLinkPrefix = sh.String()
-	c.StorageFilePaths = fs.String()
-	sugar.Info(
-		"Parsed Flags",
-		c,
-	)
-	return nil
+	cfg.Addr = sv.String()
+	return cfg, nil
 }
 
 func (a *ServHost) String() string {
@@ -144,24 +132,4 @@ func (a *ServHost) normalize() {
 	if a.Host == "" {
 		a.Host = "localhost"
 	}
-}
-
-func (a *ShorLink) String() string {
-	return a.ShortLinkPrefix
-}
-
-func (a *ShorLink) Set(s string) error {
-	hp := strings.Split(s, ":")
-	a.ShortLinkPrefix = hp[0]
-	return nil
-}
-
-func (a *FileStorage) String() string {
-	return a.FilePath
-}
-
-func (a *FileStorage) Set(s string) error {
-	hp := strings.Split(s, ":")
-	a.FilePath = hp[0]
-	return nil
 }
