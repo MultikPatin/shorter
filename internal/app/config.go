@@ -67,6 +67,12 @@ func ParseConfig() (*Config, error) {
 }
 
 func (c *Config) parseEnv() error {
+	path := os.Getenv("FILE_STORAGE_PATH")
+	sugar.Info(
+		"FILE_STORAGE_PATH",
+		path,
+	)
+
 	cfg := &envConfig{}
 	err := env.Parse(cfg)
 	if err != nil {
