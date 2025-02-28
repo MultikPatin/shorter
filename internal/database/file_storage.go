@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	perm = 0666
+	defaultFilePermissions = 0666
 )
 
 type Event struct {
@@ -43,7 +43,7 @@ func NewFileStorage(path string, isProducer bool) (*FileStorage, error) {
 		}
 	}
 
-	file, err := os.OpenFile(path, fileMode, perm)
+	file, err := os.OpenFile(path, fileMode, defaultFilePermissions)
 	if err != nil {
 		return nil, err
 	}
