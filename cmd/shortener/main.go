@@ -17,7 +17,7 @@ func main() {
 	defer logger.Sync()
 	sugar = *logger.Sugar()
 
-	c, err := app.ParseConfig()
+	c, err := app.ParseConfig(&sugar)
 	if err != nil {
 		sugar.Error(err)
 	}

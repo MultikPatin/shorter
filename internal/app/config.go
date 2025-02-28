@@ -37,14 +37,7 @@ type ServHost struct {
 	Port int
 }
 
-func ParseConfig() (*Config, error) {
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
-	sugar = *logger.Sugar()
-
+func ParseConfig(sugar *zap.SugaredLogger) (*Config, error) {
 	cfg := &Config{}
 
 	envCfg, err := parseEnv()
@@ -77,11 +70,9 @@ func ParseConfig() (*Config, error) {
 	} else {
 		cfg.StorageFilePaths = envCfg.StorageFilePaths
 	}
-
 	if cfg.StorageFilePaths == "" {
 		cfg.StorageFilePaths = defaultStorageFilePath
 	}
-
 	return cfg, nil
 }
 
