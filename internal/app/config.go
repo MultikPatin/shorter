@@ -13,8 +13,6 @@ const (
 	defaultStorageFilePath = "shorter"
 )
 
-var sugar zap.SugaredLogger
-
 type Config struct {
 	Addr             string
 	ShortLinkPrefix  string

@@ -7,12 +7,10 @@ import (
 	"strings"
 )
 
-const (
-	json = "application/json"
-	html = "text/html"
-)
-
-var availableContentTypes = []string{json, html}
+var availableContentTypes = map[string]bool{
+	"json": true,
+	"html": true,
+}
 
 type gzipWriter struct {
 	http.ResponseWriter
@@ -29,15 +27,9 @@ func GZipper(h http.Handler) http.Handler {
 		contentEncoding := r.Header.Get("Content-Encoding")
 		supportsGzip := strings.Contains(acceptEncoding, "gzip")
 		sendsGzip := strings.Contains(contentEncoding, "gzip")
-		zipped := false
-
 		requestContentType := r.Header.Get("Content-Type")
-		for _, ContentType := range availableContentTypes {
-			if ContentType == requestContentType {
-				zipped = true
-				break
-			}
-		}
+
+		zipped := availableContentTypes[requestContentType]
 
 		if sendsGzip {
 			gz, err := gzip.NewReader(r.Body)
