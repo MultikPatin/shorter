@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"go.uber.org/zap"
 )
 
 type producer interface {
@@ -25,12 +26,40 @@ type InMemoryDB struct {
 	consumerFS fileStorage
 }
 
-func NewInMemoryDB(producerFS, consumerFS fileStorage) *InMemoryDB {
-	return &InMemoryDB{
+func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) {
+	producerFS, err := NewFileStorage(path, true)
+	if err != nil {
+		logger.Infow(
+			"Create producerFS",
+			"error", err.Error(),
+		)
+	}
+	defer producerFS.Close()
+
+	consumerFS, err := NewFileStorage(path, false)
+	if err != nil {
+		logger.Infow(
+			"Create consumerFS",
+			"error", err.Error(),
+		)
+	}
+	defer consumerFS.Close()
+
+	db := InMemoryDB{
 		links:      make(map[string]string),
 		producerFS: producerFS,
 		consumerFS: consumerFS,
 	}
+
+	err = db.LoadFromFile()
+	if err != nil {
+		logger.Infow(
+			"Load events from file",
+			"error", err.Error(),
+		)
+		return nil, err
+	}
+	return &db, err
 }
 
 func (db *InMemoryDB) LoadFromFile() error {
