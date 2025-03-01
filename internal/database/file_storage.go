@@ -65,6 +65,7 @@ func (fs *FileStorage) WriteEvent(event *Event) error {
 	}
 
 	data, err := json.Marshal(&event)
+
 	if err != nil {
 		return err
 	}
@@ -72,12 +73,11 @@ func (fs *FileStorage) WriteEvent(event *Event) error {
 	if _, err := fs.writer.Write(data); err != nil {
 		return err
 	}
-
 	if err := fs.writer.WriteByte('\n'); err != nil {
 		return err
 	}
 
-	return fs.writer.Flush()
+	return err
 }
 
 func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
@@ -103,8 +103,10 @@ func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
 }
 
 func (fs *FileStorage) Close() error {
-	if err := fs.writer.Flush(); err != nil {
-		return err
+	if fs.isProducer {
+		if err := fs.writer.Flush(); err != nil {
+			return err
+		}
 	}
 	return fs.file.Close()
 }
