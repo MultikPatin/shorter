@@ -77,6 +77,8 @@ func (fs *FileStorage) WriteEvent(event *Event) error {
 		return err
 	}
 
+	err = fs.writer.Flush()
+
 	return err
 }
 

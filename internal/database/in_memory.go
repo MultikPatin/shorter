@@ -34,7 +34,6 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 			"error", err.Error(),
 		)
 	}
-	defer producerFS.Close()
 
 	consumerFS, err := NewFileStorage(path, false)
 	if err != nil {
@@ -43,7 +42,6 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 			"error", err.Error(),
 		)
 	}
-	defer consumerFS.Close()
 
 	db := InMemoryDB{
 		links:      make(map[string]string),
@@ -60,6 +58,12 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 		return nil, err
 	}
 	return &db, err
+}
+
+func (db *InMemoryDB) Close() error {
+	db.producerFS.Close()
+	db.consumerFS.Close()
+	return nil
 }
 
 func (db *InMemoryDB) LoadFromFile() error {

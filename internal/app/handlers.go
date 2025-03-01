@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"io"
 	"main/internal/services"
@@ -63,6 +64,7 @@ func (h *MyHandlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
 
 	_, err = h.database.AddLink(key, shorten.URL)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "Failed to add link", http.StatusInternalServerError)
 		return
 	}

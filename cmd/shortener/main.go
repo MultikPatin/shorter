@@ -22,6 +22,7 @@ func main() {
 			"error", err.Error(),
 		)
 	}
+	defer InMemoryDB.Close()
 
 	app.ShortPre = c.ShortLinkPrefix
 	h := app.GetHandlers(InMemoryDB)
