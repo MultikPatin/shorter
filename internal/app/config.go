@@ -35,19 +35,19 @@ type ServHost struct {
 	Port int
 }
 
-func ParseConfig(sugar *zap.SugaredLogger) (*Config, error) {
+func ParseConfig(logger *zap.SugaredLogger) (*Config, error) {
 	cfg := &Config{}
 
 	envCfg, err := parseEnv()
 	if err != nil {
-		sugar.Infow(
+		logger.Infow(
 			"Parsed Env",
 			"error", err.Error(),
 		)
 	}
 	cmdCfg, err := parseCmd()
 	if err != nil {
-		sugar.Infow(
+		logger.Infow(
 			"Parsed CMD",
 			"error", err.Error(),
 		)

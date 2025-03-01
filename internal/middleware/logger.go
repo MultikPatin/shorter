@@ -1,12 +1,10 @@
 package middleware
 
 import (
-	"go.uber.org/zap"
+	"main/internal/adapters"
 	"net/http"
 	"time"
 )
-
-var sugar zap.SugaredLogger
 
 type (
 	responseData struct {
@@ -32,12 +30,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 
 func AccessLogger(h http.Handler) http.Handler {
 	logFn := func(w http.ResponseWriter, r *http.Request) {
-		logger, err := zap.NewDevelopment()
-		if err != nil {
-			panic(err)
-		}
-		defer logger.Sync()
-		sugar = *logger.Sugar()
+		logger := adapters.GetLogger()
 
 		start := time.Now()
 
@@ -53,7 +46,7 @@ func AccessLogger(h http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		sugar.Infoln(
+		logger.Infoln(
 			"uri", r.RequestURI,
 			"method", r.Method,
 			"status", responseData.status,

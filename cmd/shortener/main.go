@@ -1,35 +1,28 @@
 package main
 
 import (
-	"go.uber.org/zap"
+	"main/internal/adapters"
 	"main/internal/app"
 	"main/internal/database"
 	"net/http"
 )
 
-var sugar zap.SugaredLogger
-
 func main() {
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
-	sugar = *logger.Sugar()
+	logger := adapters.GetLogger()
 
-	c, err := app.ParseConfig(&sugar)
+	c, err := app.ParseConfig(logger)
 	if err != nil {
-		sugar.Error(err)
+		logger.Error(err)
 	}
 
 	producerFS, err := database.NewFileStorage(c.StorageFilePaths, true)
 	if err != nil {
-		sugar.Infow(
+		logger.Infow(
 			"File storage",
 			"error", err.Error(),
 		)
 	} else {
-		sugar.Infow(
+		logger.Infow(
 			"File producerFS created",
 			"path", c.StorageFilePaths,
 		)
@@ -38,12 +31,12 @@ func main() {
 
 	consumerFS, err := database.NewFileStorage(c.StorageFilePaths, false)
 	if err != nil {
-		sugar.Infow(
+		logger.Infow(
 			"File storage",
 			"error", err.Error(),
 		)
 	} else {
-		sugar.Infow(
+		logger.Infow(
 			"File consumerFS created",
 			"path", c.StorageFilePaths,
 		)
@@ -54,7 +47,7 @@ func main() {
 
 	err = d.LoadFromFile()
 	if err != nil {
-		sugar.Infow(
+		logger.Infow(
 			"Load in memory DB",
 			"error", err.Error(),
 		)
@@ -64,12 +57,12 @@ func main() {
 	h := app.GetHandlers(d)
 	r := app.GetRouters(h)
 
-	sugar.Infow(
+	logger.Infow(
 		"Starting server",
 		"addr", c.Addr,
 	)
 
 	if err := http.ListenAndServe(c.Addr, r); err != nil {
-		sugar.Fatalw(err.Error(), "event", "start server")
+		logger.Fatalw(err.Error(), "event", "start server")
 	}
 }
