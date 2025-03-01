@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"github.com/google/uuid"
+	"main/internal/adapters"
 	"main/internal/database"
 	"net/http"
 	"net/http/httptest"
@@ -49,15 +50,14 @@ func TestPostLink(t *testing.T) {
 			},
 		},
 	}
+	logger := adapters.GetLogger()
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			producerFS, _ := database.NewFileStorage(filename, true)
-			consumerFS, _ := database.NewFileStorage(filename, false)
-
-			d := database.NewInMemoryDB(producerFS, consumerFS)
+			d, _ := database.NewInMemoryDB(filename, logger)
 			h := GetHandlers(d)
 
 			h.postLink(w, request)
@@ -120,6 +120,8 @@ func TestPostJsonLink(t *testing.T) {
 			body: ``,
 		},
 	}
+	logger := adapters.GetLogger()
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var buf bytes.Buffer
@@ -128,10 +130,7 @@ func TestPostJsonLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			producerFS, _ := database.NewFileStorage(filename, true)
-			consumerFS, _ := database.NewFileStorage(filename, false)
-
-			d := database.NewInMemoryDB(producerFS, consumerFS)
+			d, _ := database.NewInMemoryDB(filename, logger)
 			h := GetHandlers(d)
 
 			h.postJSONLink(w, request)
@@ -180,6 +179,8 @@ func TestGetLink(t *testing.T) {
 			},
 		},
 	}
+	logger := adapters.GetLogger()
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
@@ -189,10 +190,7 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			producerFS, _ := database.NewFileStorage(filename, true)
-			consumerFS, _ := database.NewFileStorage(filename, false)
-
-			d := database.NewInMemoryDB(producerFS, consumerFS)
+			d, _ := database.NewInMemoryDB(filename, logger)
 			h := GetHandlers(d)
 
 			id, err := d.AddLink(u.String(), urlPrefix+"test.com")
