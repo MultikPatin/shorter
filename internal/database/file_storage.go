@@ -3,14 +3,15 @@ package database
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
 const (
-	defaultFilePermissions = 0666
+	defaultFilePermissions   = 0666
+	defaultProducerFileFlags = os.O_RDWR | os.O_CREATE | os.O_APPEND
+	defaultConsumerFileFlags = os.O_RDONLY | os.O_CREATE
 )
 
 type Event struct {
@@ -19,51 +20,54 @@ type Event struct {
 	Short    string `json:"short_url"`
 }
 
-type FileStorage struct {
-	filename   string
-	file       *os.File
-	writer     *bufio.Writer
-	scanner    *bufio.Scanner
-	isProducer bool
+type FileProducer struct {
+	file   *os.File
+	writer *bufio.Writer
+}
+type FileConsumer struct {
+	file    *os.File
+	scanner *bufio.Scanner
 }
 
-func NewFileStorage(path string, isProducer bool) (*FileStorage, error) {
-	var fileMode int
-	if isProducer {
-		fileMode = os.O_RDWR | os.O_CREATE | os.O_APPEND
-	} else {
-		fileMode = os.O_RDONLY | os.O_CREATE
+func NewFileProducer(path string) (*FileProducer, error) {
+	file, err := newFile(path, defaultProducerFileFlags, defaultFilePermissions)
+	if err != nil {
+		return nil, err
 	}
+	fs := &FileProducer{
+		file:   file,
+		writer: bufio.NewWriterSize(file, 4096),
+	}
+	return fs, nil
+}
 
+func NewFileConsumer(path string) (*FileConsumer, error) {
+	file, err := newFile(path, defaultConsumerFileFlags, defaultFilePermissions)
+	if err != nil {
+		return nil, err
+	}
+	fs := &FileConsumer{
+		file:    file,
+		scanner: bufio.NewScanner(file),
+	}
+	return fs, nil
+}
+
+func newFile(path string, flag int, perm os.FileMode) (*os.File, error) {
 	dir := filepath.Dir(path)
-
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			return nil, fmt.Errorf("не удалось создать директорию: %w", err)
 		}
 	}
-
-	file, err := os.OpenFile(path, fileMode, defaultFilePermissions)
+	file, err := os.OpenFile(path, flag, perm)
 	if err != nil {
 		return nil, err
 	}
-
-	fs := &FileStorage{
-		filename:   path,
-		file:       file,
-		writer:     bufio.NewWriterSize(file, 4096),
-		scanner:    bufio.NewScanner(file),
-		isProducer: isProducer,
-	}
-
-	return fs, nil
+	return file, nil
 }
 
-func (fs *FileStorage) WriteEvent(event *Event) error {
-	if !fs.isProducer {
-		return errors.New("cannot write in consumer mode")
-	}
-
+func (fs *FileProducer) WriteEvent(event *Event) error {
 	data, err := json.Marshal(&event)
 
 	if err != nil {
@@ -81,12 +85,14 @@ func (fs *FileStorage) WriteEvent(event *Event) error {
 
 	return err
 }
-
-func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
-	if fs.isProducer {
-		return nil, errors.New("cannot read in producer mode")
+func (fs *FileProducer) Close() error {
+	if err := fs.writer.Flush(); err != nil {
+		return err
 	}
+	return fs.file.Close()
+}
 
+func (fs *FileConsumer) ReadAllEvents() ([]*Event, error) {
 	info, err := os.Stat(fs.file.Name())
 	if err != nil {
 		return nil, err
@@ -112,12 +118,7 @@ func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
 	return events, nil
 }
 
-func (fs *FileStorage) Close() error {
-	if fs.isProducer {
-		if err := fs.writer.Flush(); err != nil {
-			return err
-		}
-	}
+func (fs *FileConsumer) Close() error {
 	return fs.file.Close()
 }
 

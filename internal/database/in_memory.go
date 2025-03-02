@@ -15,19 +15,14 @@ type consumer interface {
 	Close() error
 }
 
-type fileStorage interface {
-	producer
-	consumer
-}
-
 type InMemoryDB struct {
 	links      map[string]string
-	producerFS fileStorage
-	consumerFS fileStorage
+	producerFS producer
+	consumerFS consumer
 }
 
 func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) {
-	producerFS, err := NewFileStorage(path, true)
+	producerFS, err := NewFileProducer(path)
 	if err != nil {
 		logger.Infow(
 			"Create producerFS",
@@ -35,7 +30,7 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 		)
 	}
 
-	consumerFS, err := NewFileStorage(path, false)
+	consumerFS, err := NewFileConsumer(path)
 	if err != nil {
 		logger.Infow(
 			"Create consumerFS",
