@@ -9,6 +9,7 @@ import (
 
 func main() {
 	logger := adapters.GetLogger()
+	defer adapters.SyncLogger()
 
 	c, err := app.ParseConfig(logger)
 	if err != nil {

@@ -87,6 +87,14 @@ func (fs *FileStorage) ReadAllEvents() ([]*Event, error) {
 		return nil, errors.New("cannot read in producer mode")
 	}
 
+	info, err := os.Stat(fs.file.Name())
+	if err != nil {
+		return nil, err
+	}
+	if info.Size() == 0 {
+		return nil, nil
+	}
+
 	var events []*Event
 
 	for fs.scanner.Scan() {

@@ -1,18 +1,23 @@
 package adapters
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+)
 
-var sugar zap.SugaredLogger
+var logger zap.Logger
 
 func init() {
-	logger, err := zap.NewDevelopment()
+	log, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}
-	defer logger.Sync()
-	sugar = *logger.Sugar()
+	logger = *log
 }
 
 func GetLogger() *zap.SugaredLogger {
-	return &sugar
+	return logger.Sugar()
+}
+
+func SyncLogger() {
+	logger.Sync()
 }
