@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"github.com/google/uuid"
 	"main/internal/adapters"
-	"main/internal/database"
+	"main/internal/adapters/database/memory"
+	"main/internal/services"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -57,8 +58,9 @@ func TestPostLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			d, _ := database.NewInMemoryDB(filename, logger)
-			h := GetHandlers(d)
+			d, _ := memory.NewInMemoryDB(filename, logger)
+			l := services.NewLinksService(d, "")
+			h := GetHandlers(l)
 
 			h.postLink(w, request)
 
@@ -130,8 +132,9 @@ func TestPostJsonLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			d, _ := database.NewInMemoryDB(filename, logger)
-			h := GetHandlers(d)
+			d, _ := memory.NewInMemoryDB(filename, logger)
+			l := services.NewLinksService(d, "")
+			h := GetHandlers(l)
 
 			h.postJSONLink(w, request)
 
@@ -190,10 +193,11 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			d, _ := database.NewInMemoryDB(filename, logger)
-			h := GetHandlers(d)
+			d, _ := memory.NewInMemoryDB(filename, logger)
+			l := services.NewLinksService(d, "")
+			h := GetHandlers(l)
 
-			id, err := d.AddLink(u.String(), urlPrefix+"test.com")
+			id, err := d.Add(u.String(), "test.com")
 			if err != nil {
 				t.Fatalf("Failed to add link")
 				return
