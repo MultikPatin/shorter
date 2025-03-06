@@ -1,4 +1,4 @@
-package sql_db
+package psql
 
 import (
 	"database/sql"

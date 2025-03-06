@@ -3,7 +3,7 @@ package adapters
 import (
 	"go.uber.org/zap"
 	"main/internal/adapters/database/memory"
-	"main/internal/adapters/database/sql_db"
+	"main/internal/adapters/database/psql"
 	"main/internal/config"
 	"main/internal/services"
 )
@@ -18,7 +18,7 @@ func GetDatabase(c *config.Config, logger *zap.SugaredLogger) (services.DataBase
 			return nil, err
 		}
 	} else {
-		database, err = sql_db.NewPostgresDB(c.PostgresDNS, logger)
+		database, err = psql.NewPostgresDB(c.PostgresDNS, logger)
 		if err != nil {
 			return nil, err
 		}
