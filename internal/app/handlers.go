@@ -16,6 +16,7 @@ const (
 type linksService interface {
 	Add(origin string, host string) (string, error)
 	Get(id string) (string, error)
+	Ping() error
 }
 
 func GetHandlers(s linksService) *Handlers {
@@ -102,4 +103,20 @@ func (h *Handlers) getLink(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", textContentType)
 	w.Header().Set("Location", origin)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h *Handlers) ping(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := h.linksService.Ping()
+	if err != nil {
+		http.Error(w, "Database not available", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("content-type", textContentType)
+	w.WriteHeader(http.StatusOK)
 }

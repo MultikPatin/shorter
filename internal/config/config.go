@@ -1,10 +1,12 @@
-package app
+package config
 
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"github.com/caarlos0/env/v6"
 	"go.uber.org/zap"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -17,17 +19,20 @@ type Config struct {
 	Addr             string
 	ShortLinkPrefix  string
 	StorageFilePaths string
+	PostgresDNS      *url.URL
 }
 
 type envConfig struct {
 	StorageFilePaths string `env:"FILE_STORAGE_PATH"`
 	Addr             string `env:"SERVER_ADDRESS"`
 	ShortLinkPrefix  string `env:"BASE_URL"`
+	PostgresDNS      string `env:"DATABASE_DSN"`
 }
 type cmdConfig struct {
 	Addr             string
 	StorageFilePaths string
 	ShortLinkPrefix  string
+	PostgresDNS      string
 }
 
 type ServHost struct {
@@ -35,7 +40,7 @@ type ServHost struct {
 	Port int
 }
 
-func ParseConfig(logger *zap.SugaredLogger) (*Config, error) {
+func Parse(logger *zap.SugaredLogger) *Config {
 	cfg := &Config{}
 
 	envCfg, err := parseEnv()
@@ -71,7 +76,13 @@ func ParseConfig(logger *zap.SugaredLogger) (*Config, error) {
 	if cfg.StorageFilePaths == "" {
 		cfg.StorageFilePaths = defaultStorageFilePath
 	}
-	return cfg, nil
+	if envCfg.PostgresDNS != "" {
+		cfg.PostgresDNS, _ = parseDSN(envCfg.PostgresDNS)
+	} else if cmdCfg.PostgresDNS != "" {
+		cfg.PostgresDNS, _ = parseDSN(cmdCfg.PostgresDNS)
+	}
+
+	return cfg
 }
 
 func parseEnv() (*envConfig, error) {
@@ -89,6 +100,7 @@ func parseCmd() (*cmdConfig, error) {
 	sh := new(ServHost)
 	_ = flag.Value(sh)
 
+	flag.StringVar(&cfg.PostgresDNS, "d", "", "Postgres DSN")
 	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "short link server")
 	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
 	flag.Var(sh, "a", "Net address host:port")
@@ -125,4 +137,13 @@ func (a *ServHost) normalize() {
 	if a.Host == "" {
 		a.Host = "localhost"
 	}
+}
+
+func parseDSN(dsn string) (*url.URL, error) {
+	parsedURL, err := url.Parse(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DSN: %w", err)
+	}
+
+	return parsedURL, nil
 }

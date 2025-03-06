@@ -45,7 +45,7 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 		consumerFS: consumerFS,
 	}
 
-	err = db.LoadFromFile()
+	err = db.loadFromFile()
 	if err != nil {
 		logger.Infow(
 			"Load events from file",
@@ -62,7 +62,11 @@ func (db *InMemoryDB) Close() error {
 	return nil
 }
 
-func (db *InMemoryDB) LoadFromFile() error {
+func (db *InMemoryDB) Ping() error {
+	return nil
+}
+
+func (db *InMemoryDB) loadFromFile() error {
 	events, err := db.consumerFS.ReadAllEvents()
 	if err != nil {
 		return err

@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"main/internal/config"
 	"net/url"
 )
 
@@ -11,21 +12,33 @@ const (
 	delimiter = "/"
 )
 
-type dataBase interface {
+type DataBase interface {
 	Add(id string, link string) (string, error)
 	Get(id string) (string, error)
+	Close() error
+	Ping() error
 }
 
 type LinksService struct {
-	database dataBase
+	database DataBase
 	shortPre string
 }
 
-func NewLinksService(db dataBase, shortPre string) *LinksService {
+func NewLinksService(c *config.Config, db DataBase) *LinksService {
 	return &LinksService{
 		database: db,
-		shortPre: shortPre,
+		shortPre: c.ShortLinkPrefix,
 	}
+}
+
+func (s *LinksService) Ping() error {
+	err := s.database.Ping()
+	return err
+}
+
+func (s *LinksService) Close() error {
+	s.database.Close()
+	return nil
 }
 
 func (s *LinksService) Add(origin string, host string) (string, error) {
