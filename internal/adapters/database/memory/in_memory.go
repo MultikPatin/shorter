@@ -1,17 +1,18 @@
-package database
+package memory
 
 import (
 	"fmt"
 	"go.uber.org/zap"
+	"main/internal/models"
 )
 
 type producer interface {
-	WriteEvent(event *Event) error
+	WriteEvent(event *models.Event) error
 	Close() error
 }
 
 type consumer interface {
-	ReadAllEvents() ([]*Event, error)
+	ReadAllEvents() ([]*models.Event, error)
 	Close() error
 }
 
@@ -44,7 +45,7 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 		consumerFS: consumerFS,
 	}
 
-	err = db.LoadFromFile()
+	err = db.loadFromFile()
 	if err != nil {
 		logger.Infow(
 			"Load events from file",
@@ -61,7 +62,11 @@ func (db *InMemoryDB) Close() error {
 	return nil
 }
 
-func (db *InMemoryDB) LoadFromFile() error {
+func (db *InMemoryDB) Ping() error {
+	return nil
+}
+
+func (db *InMemoryDB) loadFromFile() error {
 	events, err := db.consumerFS.ReadAllEvents()
 	if err != nil {
 		return err
@@ -72,11 +77,11 @@ func (db *InMemoryDB) LoadFromFile() error {
 	return nil
 }
 
-func (db *InMemoryDB) AddLink(id string, link string) (string, error) {
+func (db *InMemoryDB) Add(id string, link string) (string, error) {
 	db.links[id] = link
 	l := len(db.links)
 
-	event := &Event{
+	event := &models.Event{
 		ID:       l,
 		Original: link,
 		Short:    id,
@@ -88,7 +93,7 @@ func (db *InMemoryDB) AddLink(id string, link string) (string, error) {
 	return id, nil
 }
 
-func (db *InMemoryDB) GetByID(id string) (string, error) {
+func (db *InMemoryDB) Get(id string) (string, error) {
 	if link, ok := db.links[id]; ok {
 		return link, nil
 	}
