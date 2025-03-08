@@ -77,12 +77,12 @@ func (p *PostgresDB) Ping() error {
 }
 
 func (p *PostgresDB) Add(ctx context.Context, short string, origin string) (string, error) {
-	var returnedId string
-	err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedId)
+	var returnedID string
+	err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedID)
 	if err != nil {
 		return "", err
 	}
-	return returnedId, nil
+	return returnedID, nil
 }
 
 func (p *PostgresDB) Get(ctx context.Context, short string) (string, error) {
