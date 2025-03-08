@@ -1,10 +1,12 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"main/internal/config"
 	"net/url"
+	"time"
 )
 
 const (
@@ -12,50 +14,59 @@ const (
 	delimiter = "/"
 )
 
-type DataBase interface {
-	Add(id string, link string) (string, error)
-	Get(id string) (string, error)
+type LinksRepository interface {
+	Add(ctx context.Context, id string, link string) (string, error)
+	Get(ctx context.Context, id string) (string, error)
 	Close() error
 	Ping() error
 }
 
 type LinksService struct {
-	database DataBase
-	shortPre string
+	linksRepository LinksRepository
+	shortPre        string
 }
 
-func NewLinksService(c *config.Config, db DataBase) *LinksService {
+func NewLinksService(c *config.Config, linksRepository LinksRepository) *LinksService {
 	return &LinksService{
-		database: db,
-		shortPre: c.ShortLinkPrefix,
+		linksRepository: linksRepository,
+		shortPre:        c.ShortLinkPrefix,
 	}
 }
 
 func (s *LinksService) Ping() error {
-	err := s.database.Ping()
+	err := s.linksRepository.Ping()
 	return err
 }
 
 func (s *LinksService) Close() error {
-	s.database.Close()
+	err := s.linksRepository.Close()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (s *LinksService) Add(origin string, host string) (string, error) {
+func (s *LinksService) Add(ctx context.Context, origin string, host string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
 	u, err := uuid.NewRandom()
 	if err != nil {
 		return "", fmt.Errorf("failed to generate UUID: %w", err)
 	}
 
-	id, err := s.database.Add(getKey(u, s.shortPre), origin)
+	id, err := s.linksRepository.Add(ctx, getKey(u, s.shortPre), origin)
 	if err != nil {
 		return "", fmt.Errorf("failed to add link: %w", err)
 	}
 	return getResponseLink(id, s.shortPre, urlPrefix+host), nil
 }
 
-func (s *LinksService) Get(id string) (string, error) {
-	origin, err := s.database.Get(id)
+func (s *LinksService) Get(ctx context.Context, id string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	origin, err := s.linksRepository.Get(ctx, id)
 	if err != nil {
 		return "", fmt.Errorf("origin not found: %w", err)
 	}

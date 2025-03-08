@@ -14,12 +14,12 @@ func main() {
 
 	c := config.Parse(logger)
 
-	database, err := adapters.GetDatabase(c, logger)
+	linksRepository, err := adapters.NewLinksRepository(c, logger)
 	if err != nil {
 		panic(err)
 	}
 
-	linksService := services.NewLinksService(c, database)
+	linksService := services.NewLinksService(c, linksRepository)
 	defer linksService.Close()
 
 	h := app.GetHandlers(linksService)

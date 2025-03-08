@@ -8,20 +8,20 @@ import (
 	"main/internal/services"
 )
 
-func GetDatabase(c *config.Config, logger *zap.SugaredLogger) (services.DataBase, error) {
-	var database services.DataBase
+func NewLinksRepository(c *config.Config, logger *zap.SugaredLogger) (services.LinksRepository, error) {
+	var repository services.LinksRepository
 	var err error
 
 	if c.PostgresDNS == nil {
-		database, err = memory.NewInMemoryDB(c.StorageFilePaths, logger)
+		repository, err = memory.NewInMemoryRepository(c.StorageFilePaths, logger)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		database, err = psql.NewPostgresDB(c.PostgresDNS, logger)
+		repository, err = psql.NewPostgresRepository(c.PostgresDNS, logger)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return database, nil
+	return repository, nil
 }

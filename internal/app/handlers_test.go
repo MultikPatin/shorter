@@ -61,7 +61,7 @@ func TestPostLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.GetDatabase(c, logger)
+			d, _ := adapters.NewLinksRepository(c, logger)
 			l := services.NewLinksService(c, d)
 			h := GetHandlers(l)
 
@@ -133,7 +133,7 @@ func TestPostJsonLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.GetDatabase(c, logger)
+			d, _ := adapters.NewLinksRepository(c, logger)
 			l := services.NewLinksService(c, d)
 			h := GetHandlers(l)
 
@@ -192,7 +192,7 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			d, _ := adapters.GetDatabase(c, logger)
+			d, _ := adapters.NewLinksRepository(c, logger)
 			l := services.NewLinksService(c, d)
 			h := GetHandlers(l)
 

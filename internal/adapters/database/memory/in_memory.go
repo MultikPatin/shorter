@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"fmt"
 	"go.uber.org/zap"
 	"main/internal/models"
@@ -22,7 +23,7 @@ type InMemoryDB struct {
 	consumerFS consumer
 }
 
-func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) {
+func NewInMemoryRepository(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) {
 	producerFS, err := NewFileProducer(path)
 	if err != nil {
 		logger.Infow(
@@ -57,8 +58,14 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 }
 
 func (db *InMemoryDB) Close() error {
-	db.producerFS.Close()
-	db.consumerFS.Close()
+	err := db.producerFS.Close()
+	if err != nil {
+		return err
+	}
+	err = db.consumerFS.Close()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -77,25 +84,35 @@ func (db *InMemoryDB) loadFromFile() error {
 	return nil
 }
 
-func (db *InMemoryDB) Add(id string, link string) (string, error) {
-	db.links[id] = link
-	l := len(db.links)
+func (db *InMemoryDB) Add(ctx context.Context, id string, link string) (string, error) {
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	default:
+		db.links[id] = link
+		l := len(db.links)
 
-	event := &models.Event{
-		ID:       l,
-		Original: link,
-		Short:    id,
-	}
-	if err := db.producerFS.WriteEvent(event); err != nil {
-		return "", err
-	}
+		event := &models.Event{
+			ID:       l,
+			Original: link,
+			Short:    id,
+		}
+		if err := db.producerFS.WriteEvent(event); err != nil {
+			return "", err
+		}
 
-	return id, nil
+		return id, nil
+	}
 }
 
-func (db *InMemoryDB) Get(id string) (string, error) {
-	if link, ok := db.links[id]; ok {
-		return link, nil
+func (db *InMemoryDB) Get(ctx context.Context, id string) (string, error) {
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	default:
+		if link, ok := db.links[id]; ok {
+			return link, nil
+		}
+		return "", fmt.Errorf("user with id %s not found", id)
 	}
-	return "", fmt.Errorf("user with id %s not found", id)
 }

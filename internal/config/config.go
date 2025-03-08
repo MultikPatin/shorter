@@ -15,6 +15,8 @@ const (
 	defaultStorageFilePath = "shorter"
 )
 
+// postgresql://postgres:postgres@localhost:5432/test_db
+
 type Config struct {
 	Addr             string
 	ShortLinkPrefix  string

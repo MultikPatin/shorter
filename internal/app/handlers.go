@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"main/internal/models"
@@ -14,8 +15,8 @@ const (
 )
 
 type linksService interface {
-	Add(origin string, host string) (string, error)
-	Get(id string) (string, error)
+	Add(ctx context.Context, origin string, host string) (string, error)
+	Get(ctx context.Context, id string) (string, error)
 	Ping() error
 }
 
@@ -30,6 +31,8 @@ type Handlers struct {
 }
 
 func (h *Handlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
@@ -49,7 +52,7 @@ func (h *Handlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.Result, err = h.linksService.Add(shorten.URL, r.Host)
+	response.Result, err = h.linksService.Add(ctx, shorten.URL, r.Host)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -67,6 +70,8 @@ func (h *Handlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) postLink(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
@@ -77,7 +82,7 @@ func (h *Handlers) postLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := h.linksService.Add(string(body), r.Host)
+	response, err := h.linksService.Add(ctx, string(body), r.Host)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -89,12 +94,14 @@ func (h *Handlers) postLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) getLink(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
 
-	origin, err := h.linksService.Get(r.PathValue("id"))
+	origin, err := h.linksService.Get(ctx, r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "Origin not found", http.StatusNotFound)
 		return
