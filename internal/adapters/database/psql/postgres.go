@@ -78,11 +78,18 @@ func (p *PostgresDB) Ping() error {
 
 func (p *PostgresDB) Add(ctx context.Context, short string, origin string) (string, error) {
 	var returnedID string
-	err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedID)
-	if err != nil {
-		return "", err
+	var shortLink string
+
+	err := p.conn.QueryRowContext(ctx, getOrigin, origin).Scan(&shortLink)
+	if errors.Is(err, sql.ErrNoRows) {
+		err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedID)
+		if err != nil {
+			return "", err
+		}
+		return short, nil
+	} else {
+		return shortLink, nil
 	}
-	return returnedID, nil
 }
 
 func (p *PostgresDB) Get(ctx context.Context, short string) (string, error) {
@@ -91,6 +98,7 @@ func (p *PostgresDB) Get(ctx context.Context, short string) (string, error) {
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", fmt.Errorf("link with short %s not found", short)
 	} else if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 	return originalLink, nil

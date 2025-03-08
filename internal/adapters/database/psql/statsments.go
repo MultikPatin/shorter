@@ -8,11 +8,15 @@ const (
 		short VARCHAR(255)
 		);`
 	addShortLink = `
-		INSERT INTO links (short, origin) 
-		VALUES ($1, $2) 
+		INSERT INTO events (short, origin) 
+		VALUES ($1, $2)
 		RETURNING id;`
 	getShortLink = `
-		SELECT * 
-		FROM links 
+		SELECT origin 
+		FROM events 
 		WHERE short = $1;`
+	getOrigin = `
+		SELECT short 
+		FROM events 
+		WHERE origin = $1;`
 )
