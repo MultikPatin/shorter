@@ -3,6 +3,7 @@ package psql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
@@ -75,10 +76,22 @@ func (p *PostgresDB) Ping() error {
 	return err
 }
 
-func (p *PostgresDB) Add(ctx context.Context, id string, link string) (string, error) {
-	return "", nil
+func (p *PostgresDB) Add(ctx context.Context, short string, origin string) (string, error) {
+	var returnedId string
+	err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedId)
+	if err != nil {
+		return "", err
+	}
+	return returnedId, nil
 }
 
-func (p *PostgresDB) Get(ctx context.Context, id string) (string, error) {
-	return "", nil
+func (p *PostgresDB) Get(ctx context.Context, short string) (string, error) {
+	var originalLink string
+	err := p.conn.QueryRowContext(ctx, getShortLink, short).Scan(&originalLink)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", fmt.Errorf("link with short %s not found", short)
+	} else if err != nil {
+		return "", err
+	}
+	return originalLink, nil
 }

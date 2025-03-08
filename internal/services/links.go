@@ -15,8 +15,8 @@ const (
 )
 
 type LinksRepository interface {
-	Add(ctx context.Context, id string, link string) (string, error)
-	Get(ctx context.Context, id string) (string, error)
+	Add(ctx context.Context, short string, origin string) (string, error)
+	Get(ctx context.Context, short string) (string, error)
 	Close() error
 	Ping() error
 }

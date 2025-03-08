@@ -79,40 +79,40 @@ func (db *InMemoryDB) loadFromFile() error {
 		return err
 	}
 	for _, event := range events {
-		db.links[event.Short] = event.Original
+		db.links[event.Short] = event.Origin
 	}
 	return nil
 }
 
-func (db *InMemoryDB) Add(ctx context.Context, id string, link string) (string, error) {
+func (db *InMemoryDB) Add(ctx context.Context, short string, origin string) (string, error) {
 	select {
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		db.links[id] = link
+		db.links[short] = origin
 		l := len(db.links)
 
 		event := &models.Event{
-			ID:       l,
-			Original: link,
-			Short:    id,
+			ID:     l,
+			Origin: origin,
+			Short:  short,
 		}
 		if err := db.producerFS.WriteEvent(event); err != nil {
 			return "", err
 		}
 
-		return id, nil
+		return short, nil
 	}
 }
 
-func (db *InMemoryDB) Get(ctx context.Context, id string) (string, error) {
+func (db *InMemoryDB) Get(ctx context.Context, short string) (string, error) {
 	select {
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		if link, ok := db.links[id]; ok {
+		if link, ok := db.links[short]; ok {
 			return link, nil
 		}
-		return "", fmt.Errorf("user with id %s not found", id)
+		return "", fmt.Errorf("user with short %s not found", short)
 	}
 }
