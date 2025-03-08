@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"github.com/google/uuid"
 	"main/internal/adapters"
 	"main/internal/config"
@@ -183,6 +184,7 @@ func TestGetLink(t *testing.T) {
 			},
 		},
 	}
+	ctx := context.Background()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
@@ -196,7 +198,7 @@ func TestGetLink(t *testing.T) {
 			l := services.NewLinksService(c, d)
 			h := GetHandlers(l)
 
-			id, err := d.Add(u.String(), "test.com")
+			id, err := d.Add(ctx, u.String(), "test.com")
 			if err != nil {
 				t.Fatalf("Failed to add link")
 				return
