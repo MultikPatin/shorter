@@ -1,9 +1,10 @@
-package database
+package memory
 
 import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"main/internal/models"
 	"os"
 	"path/filepath"
 )
@@ -13,12 +14,6 @@ const (
 	defaultProducerFileFlags = os.O_RDWR | os.O_CREATE | os.O_APPEND
 	defaultConsumerFileFlags = os.O_RDONLY | os.O_CREATE
 )
-
-type Event struct {
-	ID       int    `json:"uuid"`
-	Original string `json:"original_url"`
-	Short    string `json:"short_url"`
-}
 
 type FileProducer struct {
 	file   *os.File
@@ -67,7 +62,7 @@ func newFile(path string, flag int, perm os.FileMode) (*os.File, error) {
 	return file, nil
 }
 
-func (fs *FileProducer) WriteEvent(event *Event) error {
+func (fs *FileProducer) WriteEvent(event *models.Event) error {
 	data, err := json.Marshal(&event)
 
 	if err != nil {
@@ -92,7 +87,7 @@ func (fs *FileProducer) Close() error {
 	return fs.file.Close()
 }
 
-func (fs *FileConsumer) ReadAllEvents() ([]*Event, error) {
+func (fs *FileConsumer) ReadAllEvents() ([]*models.Event, error) {
 	info, err := os.Stat(fs.file.Name())
 	if err != nil {
 		return nil, err
@@ -101,7 +96,7 @@ func (fs *FileConsumer) ReadAllEvents() ([]*Event, error) {
 		return nil, nil
 	}
 
-	var events []*Event
+	var events []*models.Event
 
 	for fs.scanner.Scan() {
 		event, err := parseLineToEvent(fs.scanner.Bytes())
@@ -122,8 +117,8 @@ func (fs *FileConsumer) Close() error {
 	return fs.file.Close()
 }
 
-func parseLineToEvent(data []byte) (*Event, error) {
-	event := &Event{}
+func parseLineToEvent(data []byte) (*models.Event, error) {
+	event := &models.Event{}
 	if err := json.Unmarshal(data, event); err != nil {
 		return nil, err
 	}

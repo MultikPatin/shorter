@@ -6,18 +6,20 @@ import (
 	"net/http"
 )
 
-type Handlers interface {
+type handlers interface {
 	postLink(w http.ResponseWriter, r *http.Request)
 	postJSONLink(w http.ResponseWriter, r *http.Request)
 	getLink(w http.ResponseWriter, r *http.Request)
+	ping(w http.ResponseWriter, r *http.Request)
 }
 
-func GetRouters(h Handlers) *chi.Mux {
+func GetRouters(h handlers) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.AccessLogger)
 	r.Use(middleware.GZipper)
 
 	r.Route("/", func(r chi.Router) {
+		r.Get("/ping", h.ping)
 		r.Post("/", h.postLink)
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", h.getLink)

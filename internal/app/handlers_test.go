@@ -2,9 +2,11 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"github.com/google/uuid"
 	"main/internal/adapters"
-	"main/internal/database"
+	"main/internal/config"
+	"main/internal/services"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,6 +17,11 @@ import (
 const (
 	filename = "test.json"
 )
+
+var c = &config.Config{
+	StorageFilePaths: "test.json",
+}
+var logger = adapters.GetLogger()
 
 func TestPostLink(t *testing.T) {
 	type want struct {
@@ -50,15 +57,14 @@ func TestPostLink(t *testing.T) {
 			},
 		},
 	}
-	logger := adapters.GetLogger()
-
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			d, _ := database.NewInMemoryDB(filename, logger)
-			h := GetHandlers(d)
+			d, _ := adapters.NewLinksRepository(c, logger)
+			l := services.NewLinksService(c, d)
+			h := GetHandlers(l)
 
 			h.postLink(w, request)
 
@@ -120,8 +126,6 @@ func TestPostJsonLink(t *testing.T) {
 			body: ``,
 		},
 	}
-	logger := adapters.GetLogger()
-
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var buf bytes.Buffer
@@ -130,8 +134,9 @@ func TestPostJsonLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			d, _ := database.NewInMemoryDB(filename, logger)
-			h := GetHandlers(d)
+			d, _ := adapters.NewLinksRepository(c, logger)
+			l := services.NewLinksService(c, d)
+			h := GetHandlers(l)
 
 			h.postJSONLink(w, request)
 
@@ -179,8 +184,7 @@ func TestGetLink(t *testing.T) {
 			},
 		},
 	}
-	logger := adapters.GetLogger()
-
+	ctx := context.Background()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
@@ -190,10 +194,11 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			d, _ := database.NewInMemoryDB(filename, logger)
-			h := GetHandlers(d)
+			d, _ := adapters.NewLinksRepository(c, logger)
+			l := services.NewLinksService(c, d)
+			h := GetHandlers(l)
 
-			id, err := d.AddLink(u.String(), urlPrefix+"test.com")
+			id, err := d.Add(ctx, u.String(), "test.com")
 			if err != nil {
 				t.Fatalf("Failed to add link")
 				return

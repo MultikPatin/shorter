@@ -19,5 +19,8 @@ func GetLogger() *zap.SugaredLogger {
 }
 
 func SyncLogger() {
-	logger.Sync()
+	err := logger.Sync()
+	if err != nil {
+		return
+	}
 }
