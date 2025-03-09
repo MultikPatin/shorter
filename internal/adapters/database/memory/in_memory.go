@@ -123,7 +123,7 @@ func (db *InMemoryDB) AddBatch(ctx context.Context, addedLinks []models.AddedLin
 				return nil, err
 			}
 			shortLink := models.Result{
-				CorrelationId: addedLink.CorrelationId,
+				CorrelationID: addedLink.CorrelationID,
 				Result:        addedLink.Short,
 			}
 			shortLinks = append(shortLinks, shortLink)

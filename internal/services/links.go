@@ -86,7 +86,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 			return nil, fmt.Errorf("failed to generate UUIDs: %w", err)
 		}
 		addedLink := models.AddedLink{
-			CorrelationId: originLinks[i].CorrelationId,
+			CorrelationID: originLinks[i].CorrelationID,
 			Short:         getKey(u, s.shortPre),
 			Origin:        originLinks[i].URL,
 		}
@@ -103,7 +103,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 
 	for _, result := range results {
 		response := models.Result{
-			CorrelationId: result.CorrelationId,
+			CorrelationID: result.CorrelationID,
 			Result:        getResponseLink(result.Result, s.shortPre, urlPrefix+host),
 		}
 		responseLinks = append(responseLinks, response)

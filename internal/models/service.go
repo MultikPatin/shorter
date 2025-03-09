@@ -1,17 +1,17 @@
 package models
 
 type AddedLink struct {
-	CorrelationId string
+	CorrelationID string
 	Short         string
 	Origin        string
 }
 
 type OriginLink struct {
-	CorrelationId string
+	CorrelationID string
 	URL           string
 }
 
 type Result struct {
-	CorrelationId string
+	CorrelationID string
 	Result        string
 }

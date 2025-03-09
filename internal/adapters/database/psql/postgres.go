@@ -110,7 +110,7 @@ func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink
 			return nil, err
 		}
 		result := models.Result{
-			CorrelationId: link.CorrelationId,
+			CorrelationID: link.CorrelationID,
 			Result:        link.Short,
 		}
 		results = append(results, result)
