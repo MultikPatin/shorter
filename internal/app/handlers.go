@@ -15,8 +15,8 @@ const (
 )
 
 type linksService interface {
-	Add(ctx context.Context, shortenRequest models.ShortenRequest, host string) (string, error)
-	AddBatch(ctx context.Context, shortenRequests []models.ShortenRequest) ([]string, error)
+	Add(ctx context.Context, originLink models.OriginLink, host string) (string, error)
+	AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error)
 	Get(ctx context.Context, shortLink string) (string, error)
 	Ping() error
 }
@@ -57,32 +57,45 @@ func (h *Handlers) addLinks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
-	//
-	var shorten models.ShortenRequest
-	var response models.ShortenResponse
-	//
+
+	var shortenRequests []models.ShortensRequest
+	var responses []models.ShortensResponse
+
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	//if err = json.Unmarshal(buf.Bytes(), &shorten); err != nil {
-	//	http.Error(w, err.Error(), http.StatusBadRequest)
-	//	return
-	//}
-	//
-	response.Result, err = h.linksService.AddBatch(ctx, shorten.URL, r.Host)
+	if err = json.Unmarshal(buf.Bytes(), &shortenRequests); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var originLinks []models.OriginLink
+
+	for _, req := range shortenRequests {
+		originLink := models.OriginLink{
+			CorrelationId: req.CorrelationId,
+			URL:           req.URL,
+		}
+		originLinks = append(originLinks, originLink)
+	}
+
+	results, err := h.linksService.AddBatch(ctx, originLinks, r.Host)
+
+	for _, result := range results {
+		responses = append(responses, models.ShortensResponse{
+			CorrelationId: result.CorrelationId,
+			Result:        result.Result,
+		})
+	}
+
+	resp, err := json.Marshal(responses)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	//
-	//resp, err := json.Marshal(response)
-	//if err != nil {
-	//	http.Error(w, err.Error(), http.StatusInternalServerError)
-	//	return
-	//}
 
 	w.Header().Set("content-type", jsonContentType)
 	w.WriteHeader(http.StatusCreated)
@@ -111,7 +124,11 @@ func (h *Handlers) addLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.Result, err = h.linksService.Add(ctx, shortenRequest, r.Host)
+	originLink := models.OriginLink{
+		URL: shortenRequest.URL,
+	}
+
+	response.Result, err = h.linksService.Add(ctx, originLink, r.Host)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -141,7 +158,11 @@ func (h *Handlers) addLinkInText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := h.linksService.Add(ctx, string(body), r.Host)
+	originLink := models.OriginLink{
+		URL: string(body),
+	}
+
+	response, err := h.linksService.Add(ctx, originLink, r.Host)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

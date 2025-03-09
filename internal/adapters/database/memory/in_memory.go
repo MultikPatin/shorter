@@ -104,12 +104,12 @@ func (db *InMemoryDB) Add(ctx context.Context, addedLink models.AddedLink) (stri
 	}
 }
 
-func (db *InMemoryDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]string, error) {
+func (db *InMemoryDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		var shortLinks []string
+		var shortLinks []models.Result
 
 		for _, addedLink := range addedLinks {
 			db.links[addedLink.Short] = addedLink.Origin
@@ -122,7 +122,11 @@ func (db *InMemoryDB) AddBatch(ctx context.Context, addedLinks []models.AddedLin
 			if err := db.producerFS.WriteEvent(event); err != nil {
 				return nil, err
 			}
-			shortLinks = append(shortLinks, addedLink.Short)
+			shortLink := models.Result{
+				CorrelationId: addedLink.CorrelationId,
+				Result:        addedLink.Short,
+			}
+			shortLinks = append(shortLinks, shortLink)
 		}
 		return shortLinks, nil
 	}

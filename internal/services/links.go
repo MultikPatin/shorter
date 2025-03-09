@@ -17,7 +17,7 @@ const (
 
 type LinksRepository interface {
 	Add(ctx context.Context, addedLink models.AddedLink) (string, error)
-	AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]string, error)
+	AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error)
 	Get(ctx context.Context, short string) (string, error)
 	Close() error
 	Ping() error
@@ -48,7 +48,7 @@ func (s *LinksService) Close() error {
 	return nil
 }
 
-func (s *LinksService) Add(ctx context.Context, shortenRequest models.ShortenRequest, host string) (string, error) {
+func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, host string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
@@ -59,7 +59,7 @@ func (s *LinksService) Add(ctx context.Context, shortenRequest models.ShortenReq
 
 	addedLink := models.AddedLink{
 		Short:  getKey(u, s.shortPre),
-		Origin: shortenRequest.URL,
+		Origin: originLink.URL,
 	}
 
 	id, err := s.linksRepository.Add(ctx, addedLink)
@@ -69,15 +69,14 @@ func (s *LinksService) Add(ctx context.Context, shortenRequest models.ShortenReq
 	return getResponseLink(id, s.shortPre, urlPrefix+host), nil
 }
 
-func (s *LinksService) AddBatch(ctx context.Context, shortenRequests []models.ShortenRequest, host string) ([]string, error) {
+func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	retries := 0
 	var addedLinks []models.AddedLink
-	var responseLinks []string
 
-	for i := 0; i <= len(shortenRequests); {
+	for i := 0; i <= len(originLinks); {
 		u, err := uuid.NewRandom()
 		if err != nil {
 			retries += 1
@@ -87,20 +86,27 @@ func (s *LinksService) AddBatch(ctx context.Context, shortenRequests []models.Sh
 			return nil, fmt.Errorf("failed to generate UUIDs: %w", err)
 		}
 		addedLink := models.AddedLink{
-			Short:  getKey(u, s.shortPre),
-			Origin: shortenRequests[i].URL,
+			CorrelationId: originLinks[i].CorrelationId,
+			Short:         getKey(u, s.shortPre),
+			Origin:        originLinks[i].URL,
 		}
 		addedLinks = append(addedLinks, addedLink)
 		i++
 	}
 
-	ids, err := s.linksRepository.AddBatch(ctx, addedLinks)
+	results, err := s.linksRepository.AddBatch(ctx, addedLinks)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add links: %w", err)
 	}
 
-	for _, id := range ids {
-		responseLinks = append(responseLinks, getResponseLink(id, s.shortPre, urlPrefix+host))
+	var responseLinks []models.Result
+
+	for _, result := range results {
+		response := models.Result{
+			CorrelationId: result.CorrelationId,
+			Result:        getResponseLink(result.Result, s.shortPre, urlPrefix+host),
+		}
+		responseLinks = append(responseLinks, response)
 	}
 	return responseLinks, nil
 }

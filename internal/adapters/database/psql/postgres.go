@@ -96,7 +96,7 @@ func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (strin
 	}
 }
 
-func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]string, error) {
+func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
 	//var returnedID string
 	//var shortLink string
 	//
