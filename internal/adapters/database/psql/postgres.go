@@ -79,12 +79,11 @@ func (p *PostgresDB) Ping() error {
 }
 
 func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
-	var returnedID string
 	var shortLink string
 
 	err := p.conn.QueryRowContext(ctx, getOrigin, addedLink.Origin).Scan(&shortLink)
 	if errors.Is(err, sql.ErrNoRows) {
-		err := p.conn.QueryRowContext(ctx, addShortLink, addedLink.Short, addedLink.Origin).Scan(&returnedID)
+		_, err := p.conn.ExecContext(ctx, addShortLink, addedLink.Short, addedLink.Origin)
 		if err != nil {
 			return "", err
 		}
@@ -97,21 +96,27 @@ func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (strin
 }
 
 func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
-	//var returnedID string
-	//var shortLink string
-	//
-	//err := p.conn.QueryRowContext(ctx, getOrigin, origin).Scan(&shortLink)
-	//if errors.Is(err, sql.ErrNoRows) {
-	//	err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedID)
-	//	if err != nil {
-	//		return "", err
-	//	}
-	//	return short, nil
-	//} else if err != nil {
-	//	return "", err
-	//} else {
-	//	return shortLink, nil
-	//}
+	tx, err := p.conn.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	var results []models.Result
+
+	for _, link := range addedLinks {
+		_, err := p.conn.ExecContext(ctx, addShortLink, link.Short, link.Origin)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		result := models.Result{
+			CorrelationId: link.CorrelationId,
+			Result:        link.Short,
+		}
+		results = append(results, result)
+	}
+	tx.Commit()
+	return results, nil
 }
 
 func (p *PostgresDB) Get(ctx context.Context, short string) (string, error) {

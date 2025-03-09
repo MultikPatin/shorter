@@ -9,8 +9,7 @@ const (
 		);`
 	addShortLink = `
 		INSERT INTO events (short, origin) 
-		VALUES ($1, $2)
-		RETURNING id;`
+		VALUES ($1, $2)`
 	getShortLink = `
 		SELECT origin 
 		FROM events 
