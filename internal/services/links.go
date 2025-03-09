@@ -76,7 +76,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 	retries := 0
 	var addedLinks []models.AddedLink
 
-	for i := 0; i <= len(originLinks); {
+	for i := 0; i < len(originLinks); {
 		u, err := uuid.NewRandom()
 		if err != nil {
 			retries += 1
