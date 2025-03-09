@@ -84,24 +84,47 @@ func (db *InMemoryDB) loadFromFile() error {
 	return nil
 }
 
-func (db *InMemoryDB) Add(ctx context.Context, short string, origin string) (string, error) {
+func (db *InMemoryDB) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
 	select {
 	case <-ctx.Done():
 		return "", ctx.Err()
 	default:
-		db.links[short] = origin
-		l := len(db.links)
+		db.links[addedLink.Short] = addedLink.Origin
 
 		event := &models.Event{
-			ID:     l,
-			Origin: origin,
-			Short:  short,
+			ID:     len(db.links),
+			Origin: addedLink.Origin,
+			Short:  addedLink.Short,
 		}
 		if err := db.producerFS.WriteEvent(event); err != nil {
 			return "", err
 		}
 
-		return short, nil
+		return addedLink.Short, nil
+	}
+}
+
+func (db *InMemoryDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]string, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+		var shortLinks []string
+
+		for _, addedLink := range addedLinks {
+			db.links[addedLink.Short] = addedLink.Origin
+
+			event := &models.Event{
+				ID:     len(db.links),
+				Origin: addedLink.Origin,
+				Short:  addedLink.Short,
+			}
+			if err := db.producerFS.WriteEvent(event); err != nil {
+				return nil, err
+			}
+			shortLinks = append(shortLinks, addedLink.Short)
+		}
+		return shortLinks, nil
 	}
 }
 

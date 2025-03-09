@@ -7,6 +7,7 @@ import (
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
+	"main/internal/models"
 	"net/url"
 	"time"
 )
@@ -36,6 +37,7 @@ func NewPostgresRepository(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*Po
 		)
 		return nil, err
 	}
+
 	err = migrate(ctx, conn)
 	if err != nil {
 		logger.Infow(
@@ -76,20 +78,40 @@ func (p *PostgresDB) Ping() error {
 	return err
 }
 
-func (p *PostgresDB) Add(ctx context.Context, short string, origin string) (string, error) {
+func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
 	var returnedID string
 	var shortLink string
 
-	err := p.conn.QueryRowContext(ctx, getOrigin, origin).Scan(&shortLink)
+	err := p.conn.QueryRowContext(ctx, getOrigin, addedLink.Origin).Scan(&shortLink)
 	if errors.Is(err, sql.ErrNoRows) {
-		err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedID)
+		err := p.conn.QueryRowContext(ctx, addShortLink, addedLink.Short, addedLink.Origin).Scan(&returnedID)
 		if err != nil {
 			return "", err
 		}
-		return short, nil
+		return addedLink.Short, nil
+	} else if err != nil {
+		return "", err
 	} else {
 		return shortLink, nil
 	}
+}
+
+func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]string, error) {
+	//var returnedID string
+	//var shortLink string
+	//
+	//err := p.conn.QueryRowContext(ctx, getOrigin, origin).Scan(&shortLink)
+	//if errors.Is(err, sql.ErrNoRows) {
+	//	err := p.conn.QueryRowContext(ctx, addShortLink, short, origin).Scan(&returnedID)
+	//	if err != nil {
+	//		return "", err
+	//	}
+	//	return short, nil
+	//} else if err != nil {
+	//	return "", err
+	//} else {
+	//	return shortLink, nil
+	//}
 }
 
 func (p *PostgresDB) Get(ctx context.Context, short string) (string, error) {
@@ -98,7 +120,6 @@ func (p *PostgresDB) Get(ctx context.Context, short string) (string, error) {
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", fmt.Errorf("link with short %s not found", short)
 	} else if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	return originalLink, nil

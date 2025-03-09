@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"main/internal/config"
+	"main/internal/models"
 	"net/url"
 	"time"
 )
@@ -15,7 +16,8 @@ const (
 )
 
 type LinksRepository interface {
-	Add(ctx context.Context, short string, origin string) (string, error)
+	Add(ctx context.Context, addedLink models.AddedLink) (string, error)
+	AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]string, error)
 	Get(ctx context.Context, short string) (string, error)
 	Close() error
 	Ping() error
@@ -46,7 +48,7 @@ func (s *LinksService) Close() error {
 	return nil
 }
 
-func (s *LinksService) Add(ctx context.Context, origin string, host string) (string, error) {
+func (s *LinksService) Add(ctx context.Context, shortenRequest models.ShortenRequest, host string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
@@ -55,22 +57,63 @@ func (s *LinksService) Add(ctx context.Context, origin string, host string) (str
 		return "", fmt.Errorf("failed to generate UUID: %w", err)
 	}
 
-	id, err := s.linksRepository.Add(ctx, getKey(u, s.shortPre), origin)
+	addedLink := models.AddedLink{
+		Short:  getKey(u, s.shortPre),
+		Origin: shortenRequest.URL,
+	}
+
+	id, err := s.linksRepository.Add(ctx, addedLink)
 	if err != nil {
 		return "", fmt.Errorf("failed to add link: %w", err)
 	}
 	return getResponseLink(id, s.shortPre, urlPrefix+host), nil
 }
 
-func (s *LinksService) Get(ctx context.Context, id string) (string, error) {
+func (s *LinksService) AddBatch(ctx context.Context, shortenRequests []models.ShortenRequest, host string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	origin, err := s.linksRepository.Get(ctx, id)
-	if err != nil {
-		return "", fmt.Errorf("origin not found: %w", err)
+	retries := 0
+	var addedLinks []models.AddedLink
+	var responseLinks []string
+
+	for i := 0; i <= len(shortenRequests); {
+		u, err := uuid.NewRandom()
+		if err != nil {
+			retries += 1
+			continue
+		}
+		if retries >= 5 {
+			return nil, fmt.Errorf("failed to generate UUIDs: %w", err)
+		}
+		addedLink := models.AddedLink{
+			Short:  getKey(u, s.shortPre),
+			Origin: shortenRequests[i].URL,
+		}
+		addedLinks = append(addedLinks, addedLink)
+		i++
 	}
-	return origin, nil
+
+	ids, err := s.linksRepository.AddBatch(ctx, addedLinks)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add links: %w", err)
+	}
+
+	for _, id := range ids {
+		responseLinks = append(responseLinks, getResponseLink(id, s.shortPre, urlPrefix+host))
+	}
+	return responseLinks, nil
+}
+
+func (s *LinksService) Get(ctx context.Context, shortLink string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	originLink, err := s.linksRepository.Get(ctx, shortLink)
+	if err != nil {
+		return "", fmt.Errorf("origin link not found: %w", err)
+	}
+	return originLink, nil
 }
 
 func getKey(u uuid.UUID, p string) string {

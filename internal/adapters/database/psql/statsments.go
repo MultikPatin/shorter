@@ -4,8 +4,8 @@ const (
 	createLinksTable = `
 		CREATE TABLE IF NOT EXISTS events (
 		id SERIAL PRIMARY KEY,
-		origin VARCHAR(255),
-		short VARCHAR(255)
+		origin VARCHAR(255) NOT NULL,
+		short VARCHAR(255) NOT NULL
 		);`
 	addShortLink = `
 		INSERT INTO events (short, origin) 

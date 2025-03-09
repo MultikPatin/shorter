@@ -66,7 +66,7 @@ func TestPostLink(t *testing.T) {
 			l := services.NewLinksService(c, d)
 			h := GetHandlers(l)
 
-			h.postLink(w, request)
+			h.addLinkInText(w, request)
 
 			res := w.Result()
 
@@ -138,7 +138,7 @@ func TestPostJsonLink(t *testing.T) {
 			l := services.NewLinksService(c, d)
 			h := GetHandlers(l)
 
-			h.postJSONLink(w, request)
+			h.addLink(w, request)
 
 			res := w.Result()
 
