@@ -75,20 +75,19 @@ func (h *Handlers) addLinks(w http.ResponseWriter, r *http.Request) {
 	var originLinks []models.OriginLink
 
 	for _, req := range shortenRequests {
-		originLink := models.OriginLink{
-			CorrelationId: req.CorrelationId,
-			URL:           req.URL,
-		}
+		originLink := models.OriginLink(req)
 		originLinks = append(originLinks, originLink)
 	}
 
 	results, err := h.linksService.AddBatch(ctx, originLinks, r.Host)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	for _, result := range results {
-		responses = append(responses, models.ShortensResponse{
-			CorrelationId: result.CorrelationId,
-			Result:        result.Result,
-		})
+		shortensResponse := models.ShortensResponse(result)
+		responses = append(responses, shortensResponse)
 	}
 
 	resp, err := json.Marshal(responses)
