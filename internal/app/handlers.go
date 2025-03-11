@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"main/internal/adapters/database/psql"
 	"main/internal/models"
+	"main/internal/services"
 	"net/http"
 )
 
@@ -133,7 +133,7 @@ func (h *Handlers) addLink(w http.ResponseWriter, r *http.Request) {
 
 	response.Result, err = h.linksService.Add(ctx, originLink, r.Host)
 	if err != nil {
-		if errors.Is(err, psql.ErrConflict) {
+		if errors.Is(err, services.ErrConflict) {
 			status = http.StatusConflict
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -169,14 +169,20 @@ func (h *Handlers) addLinkInText(w http.ResponseWriter, r *http.Request) {
 		URL: string(body),
 	}
 
+	status := http.StatusCreated
+
 	response, err := h.linksService.Add(ctx, originLink, r.Host)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if errors.Is(err, services.ErrConflict) {
+			status = http.StatusConflict
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("content-type", textContentType)
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(status)
 	w.Write([]byte(response))
 }
 

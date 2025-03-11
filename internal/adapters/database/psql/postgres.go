@@ -10,11 +10,10 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 	"main/internal/models"
+	"main/internal/services"
 	"net/url"
 	"time"
 )
-
-var ErrConflict = errors.New("data conflict")
 
 type PostgresDB struct {
 	conn *sql.DB
@@ -88,7 +87,7 @@ func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (strin
 			if err != nil {
 				return "", err
 			}
-			return shortLink, ErrConflict
+			return shortLink, services.ErrConflict
 		}
 	}
 	return addedLink.Short, nil

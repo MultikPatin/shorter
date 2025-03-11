@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"main/internal/adapters/database/psql"
 	"main/internal/config"
 	"main/internal/models"
 	"net/url"
 	"time"
 )
+
+var ErrConflict = errors.New("data conflict")
 
 const (
 	urlPrefix = "http://"
@@ -66,9 +67,10 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 
 	id, err := s.linksRepository.Add(ctx, addedLink)
 	if err != nil {
-		if errors.Is(err, psql.ErrConflict) {
+		if errors.Is(err, ErrConflict) {
 			return getResponseLink(id, s.shortPre, urlPrefix+host), err
 		} else {
+			fmt.Printf(err.Error())
 			return "", fmt.Errorf("failed to add link: %w", err)
 		}
 	}
