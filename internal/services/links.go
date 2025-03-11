@@ -65,8 +65,12 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 	}
 
 	id, err := s.linksRepository.Add(ctx, addedLink)
-	if err != nil && !errors.Is(err, psql.ErrConflict) {
-		return "", fmt.Errorf("failed to add link: %w", err)
+	if err != nil {
+		if errors.Is(err, psql.ErrConflict) {
+			return getResponseLink(id, s.shortPre, urlPrefix+host), err
+		} else {
+			return "", fmt.Errorf("failed to add link: %w", err)
+		}
 	}
 	return getResponseLink(id, s.shortPre, urlPrefix+host), nil
 }

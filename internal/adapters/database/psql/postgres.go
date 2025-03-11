@@ -88,10 +88,10 @@ func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (strin
 			if err != nil {
 				return "", err
 			}
-			return shortLink, nil
+			return shortLink, ErrConflict
 		}
 	}
-	return addedLink.Short, ErrConflict
+	return addedLink.Short, nil
 }
 
 func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
