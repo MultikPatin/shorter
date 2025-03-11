@@ -5,12 +5,16 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 	"main/internal/models"
 	"net/url"
 	"time"
 )
+
+var ErrConflict = errors.New("data conflict")
 
 type PostgresDB struct {
 	conn *sql.DB
@@ -53,16 +57,11 @@ func NewPostgresRepository(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*Po
 }
 
 func migrate(ctx context.Context, conn *sql.DB) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-		_, err := conn.ExecContext(ctx, createLinksTable)
-		if err != nil {
-			return err
-		}
-		return nil
+	_, err := conn.ExecContext(ctx, createLinksTable)
+	if err != nil {
+		return err
 	}
+	return nil
 }
 
 func (p *PostgresDB) Close() error {
@@ -81,18 +80,18 @@ func (p *PostgresDB) Ping() error {
 func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
 	var shortLink string
 
-	err := p.conn.QueryRowContext(ctx, getOrigin, addedLink.Origin).Scan(&shortLink)
-	if errors.Is(err, sql.ErrNoRows) {
-		_, err := p.conn.ExecContext(ctx, addShortLink, addedLink.Short, addedLink.Origin)
-		if err != nil {
-			return "", err
+	_, err := p.conn.ExecContext(ctx, addShortLink, addedLink.Short, addedLink.Origin)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
+			err := p.conn.QueryRowContext(ctx, getOrigin, addedLink.Origin).Scan(&shortLink)
+			if err != nil {
+				return "", err
+			}
+			return shortLink, nil
 		}
-		return addedLink.Short, nil
-	} else if err != nil {
-		return "", err
-	} else {
-		return shortLink, nil
 	}
+	return addedLink.Short, ErrConflict
 }
 
 func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {

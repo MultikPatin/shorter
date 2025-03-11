@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
+	"main/internal/adapters/database/psql"
 	"main/internal/models"
 	"net/http"
 )
@@ -127,10 +129,16 @@ func (h *Handlers) addLink(w http.ResponseWriter, r *http.Request) {
 		URL: shortenRequest.URL,
 	}
 
+	status := http.StatusCreated
+
 	response.Result, err = h.linksService.Add(ctx, originLink, r.Host)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if errors.Is(err, psql.ErrConflict) {
+			status = http.StatusConflict
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	resp, err := json.Marshal(response)
@@ -140,7 +148,7 @@ func (h *Handlers) addLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("content-type", jsonContentType)
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(status)
 	w.Write(resp)
 }
 

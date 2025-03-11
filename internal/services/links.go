@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"main/internal/adapters/database/psql"
 	"main/internal/config"
 	"main/internal/models"
 	"net/url"
@@ -63,7 +65,7 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 	}
 
 	id, err := s.linksRepository.Add(ctx, addedLink)
-	if err != nil {
+	if err != nil && !errors.Is(err, psql.ErrConflict) {
 		return "", fmt.Errorf("failed to add link: %w", err)
 	}
 	return getResponseLink(id, s.shortPre, urlPrefix+host), nil
