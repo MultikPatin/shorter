@@ -70,7 +70,6 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 		if errors.Is(err, ErrConflict) {
 			return getResponseLink(id, s.shortPre, urlPrefix+host), err
 		} else {
-			fmt.Printf(err.Error())
 			return "", fmt.Errorf("failed to add link: %w", err)
 		}
 	}
