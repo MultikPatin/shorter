@@ -1,0 +1,33 @@
+services:
+
+  postgres:
+    image: postgres:16.8
+    container_name: postgres_db
+    restart: always
+    environment:
+      - POSTGRES_DB=test_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PORT=5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d test_db" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    ports:
+      - "5432:5432"
+    networks:
+      - services
+
+volumes:
+  postgres_data:
+
+networks:
+  services:
+
+
+#postgresql://postgres:postgres@localhost:5432/test_db

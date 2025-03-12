@@ -3,44 +3,58 @@ package app
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"github.com/google/uuid"
+	"errors"
 	"io"
+	"main/internal/interfaces"
+	"main/internal/models"
 	"main/internal/services"
 	"net/http"
 )
 
 const (
-	urlPrefix       = "http://"
 	textContentType = "text/plain; charset=utf-8"
 	jsonContentType = "application/json"
 )
 
-type dataBase interface {
-	AddLink(id string, link string) (string, error)
-	GetByID(id string) (string, error)
-}
-
-func GetHandlers(db dataBase) *MyHandlers {
-	return &MyHandlers{
-		database: db,
+func NewLinksHandlers(s interfaces.LinksService) *LinksHandlers {
+	return &LinksHandlers{
+		linksService: s,
 	}
 }
 
-type MyHandlers struct {
-	database dataBase
+type LinksHandlers struct {
+	linksService interfaces.LinksService
 }
 
-var ShortPre = ""
+func (h *LinksHandlers) GetLink(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-func (h *MyHandlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	originLink, err := h.linksService.Get(ctx, r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Origin not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("content-type", textContentType)
+	w.Header().Set("Location", originLink)
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h *LinksHandlers) AddLinks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
 
-	var shorten ShortenRequest
-	var response ShortenResponse
+	var shortenRequests []models.ShortensRequest
+	var responses []models.ShortensResponse
 
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
@@ -48,28 +62,30 @@ func (h *MyHandlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err = json.Unmarshal(buf.Bytes(), &shorten); err != nil {
+	if err = json.Unmarshal(buf.Bytes(), &shortenRequests); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	u, err := uuid.NewRandom()
+	var originLinks []models.OriginLink
+
+	for _, req := range shortenRequests {
+		originLink := models.OriginLink(req)
+		originLinks = append(originLinks, originLink)
+	}
+
+	results, err := h.linksService.AddBatch(ctx, originLinks, r.Host)
 	if err != nil {
-		http.Error(w, "Failed to generate UUID", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	key := services.GetDBKey(u, ShortPre)
-	response.Result = services.GetResponseLink(key, ShortPre, urlPrefix+r.Host)
-
-	_, err = h.database.AddLink(key, shorten.URL)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Failed to add link", http.StatusInternalServerError)
-		return
+	for _, result := range results {
+		shortensResponse := models.ShortensResponse(result)
+		responses = append(responses, shortensResponse)
 	}
 
-	resp, err := json.Marshal(response)
+	resp, err := json.Marshal(responses)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -80,7 +96,58 @@ func (h *MyHandlers) postJSONLink(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
-func (h *MyHandlers) postLink(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandlers) AddLink(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	if r.Method != http.MethodPost {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	var shortenRequest models.ShortenRequest
+	var response models.ShortenResponse
+
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = json.Unmarshal(buf.Bytes(), &shortenRequest); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	originLink := models.OriginLink{
+		URL: shortenRequest.URL,
+	}
+
+	status := http.StatusCreated
+
+	response.Result, err = h.linksService.Add(ctx, originLink, r.Host)
+	if err != nil {
+		if errors.Is(err, services.ErrConflict) {
+			status = http.StatusConflict
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	resp, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("content-type", jsonContentType)
+	w.WriteHeader(status)
+	w.Write(resp)
+}
+
+func (h *LinksHandlers) AddLinkInText(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
@@ -90,40 +157,40 @@ func (h *MyHandlers) postLink(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
-	u, err := uuid.NewRandom()
-	if err != nil {
-		http.Error(w, "Failed to generate UUID", http.StatusInternalServerError)
-		return
+
+	originLink := models.OriginLink{
+		URL: string(body),
 	}
 
-	key := services.GetDBKey(u, ShortPre)
-	response := services.GetResponseLink(key, ShortPre, urlPrefix+r.Host)
+	status := http.StatusCreated
 
-	_, err = h.database.AddLink(key, string(body))
+	response, err := h.linksService.Add(ctx, originLink, r.Host)
 	if err != nil {
-		http.Error(w, "Failed to add link", http.StatusInternalServerError)
-		return
+		if errors.Is(err, services.ErrConflict) {
+			status = http.StatusConflict
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("content-type", textContentType)
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(status)
 	w.Write([]byte(response))
 }
 
-func (h *MyHandlers) getLink(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandlers) Ping(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
-	id := r.PathValue("id")
 
-	origin, err := h.database.GetByID(id)
+	err := h.linksService.Ping()
 	if err != nil {
-		http.Error(w, "Origin not found", http.StatusNotFound)
+		http.Error(w, "Database not available", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("content-type", textContentType)
-	w.Header().Set("Location", origin)
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	w.WriteHeader(http.StatusOK)
 }

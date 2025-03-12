@@ -3,7 +3,8 @@ package main
 import (
 	"main/internal/adapters"
 	"main/internal/app"
-	"main/internal/database"
+	"main/internal/config"
+	"main/internal/services"
 	"net/http"
 )
 
@@ -11,23 +12,18 @@ func main() {
 	logger := adapters.GetLogger()
 	defer adapters.SyncLogger()
 
-	c, err := app.ParseConfig(logger)
+	c := config.Parse(logger)
+
+	linksRepository, err := adapters.NewLinksRepository(c, logger)
 	if err != nil {
-		logger.Error(err)
+		panic(err)
 	}
 
-	InMemoryDB, err := database.NewInMemoryDB(c.StorageFilePaths, logger)
-	if err != nil {
-		logger.Infow(
-			"Create in memory DB",
-			"error", err.Error(),
-		)
-	}
-	defer InMemoryDB.Close()
+	linksService := services.NewLinksService(c, linksRepository)
+	defer linksService.Close()
 
-	app.ShortPre = c.ShortLinkPrefix
-	h := app.GetHandlers(InMemoryDB)
-	r := app.GetRouters(h)
+	h := app.NewLinksHandlers(linksService)
+	r := app.NewRouters(h)
 
 	logger.Infow(
 		"Starting server",
