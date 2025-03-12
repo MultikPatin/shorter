@@ -30,6 +30,7 @@ func NewInMemoryRepository(path string, logger *zap.SugaredLogger) (*InMemoryDB,
 			"Create producerFS",
 			"error", err.Error(),
 		)
+		return nil, err
 	}
 
 	consumerFS, err := NewFileConsumer(path)
@@ -38,6 +39,7 @@ func NewInMemoryRepository(path string, logger *zap.SugaredLogger) (*InMemoryDB,
 			"Create consumerFS",
 			"error", err.Error(),
 		)
+		return nil, err
 	}
 
 	db := InMemoryDB{

@@ -77,20 +77,23 @@ func (p *PostgresDB) Ping() error {
 }
 
 func (p *PostgresDB) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
-	var shortLink string
-
 	_, err := p.conn.ExecContext(ctx, addShortLink, addedLink.Short, addedLink.Origin)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
-			err := p.conn.QueryRowContext(ctx, getOrigin, addedLink.Origin).Scan(&shortLink)
-			if err != nil {
-				return "", err
-			}
-			return shortLink, services.ErrConflict
-		}
+	if err == nil {
+		return addedLink.Short, nil
 	}
-	return addedLink.Short, nil
+
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) || !pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
+		return "", err
+	}
+
+	var shortLink string
+	err = p.conn.QueryRowContext(ctx, getOrigin, addedLink.Origin).Scan(&shortLink)
+	if err != nil {
+		return "", err
+	}
+
+	return shortLink, services.ErrConflict
 }
 
 func (p *PostgresDB) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
