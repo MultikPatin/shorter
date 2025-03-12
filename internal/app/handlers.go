@@ -2,10 +2,10 @@ package app
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"io"
+	"main/internal/interfaces"
 	"main/internal/models"
 	"main/internal/services"
 	"net/http"
@@ -16,24 +16,17 @@ const (
 	jsonContentType = "application/json"
 )
 
-type linksService interface {
-	Add(ctx context.Context, originLink models.OriginLink, host string) (string, error)
-	AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error)
-	Get(ctx context.Context, shortLink string) (string, error)
-	Ping() error
-}
-
-func GetHandlers(s linksService) *Handlers {
-	return &Handlers{
+func NewLinksHandlers(s interfaces.LinksService) *LinksHandlers {
+	return &LinksHandlers{
 		linksService: s,
 	}
 }
 
-type Handlers struct {
-	linksService linksService
+type LinksHandlers struct {
+	linksService interfaces.LinksService
 }
 
-func (h *Handlers) getLink(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandlers) GetLink(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if r.Method != http.MethodGet {
@@ -52,7 +45,7 @@ func (h *Handlers) getLink(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (h *Handlers) addLinks(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandlers) AddLinks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if r.Method != http.MethodPost {
@@ -103,7 +96,7 @@ func (h *Handlers) addLinks(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
-func (h *Handlers) addLink(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandlers) AddLink(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if r.Method != http.MethodPost {
@@ -152,7 +145,7 @@ func (h *Handlers) addLink(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
-func (h *Handlers) addLinkInText(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandlers) AddLinkInText(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if r.Method != http.MethodPost {
@@ -186,7 +179,7 @@ func (h *Handlers) addLinkInText(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func (h *Handlers) ping(w http.ResponseWriter, r *http.Request) {
+func (h *LinksHandlers) Ping(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return

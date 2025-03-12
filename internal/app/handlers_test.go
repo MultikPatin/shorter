@@ -61,9 +61,9 @@ func TestAddLinkInText(t *testing.T) {
 
 			d, _ := adapters.NewLinksRepository(c, logger)
 			l := services.NewLinksService(c, d)
-			h := GetHandlers(l)
+			h := NewLinksHandlers(l)
 
-			h.addLinkInText(w, request)
+			h.AddLinkInText(w, request)
 
 			res := w.Result()
 
@@ -133,9 +133,9 @@ func TestAddLink(t *testing.T) {
 
 			d, _ := adapters.NewLinksRepository(c, logger)
 			l := services.NewLinksService(c, d)
-			h := GetHandlers(l)
+			h := NewLinksHandlers(l)
 
-			h.addLink(w, request)
+			h.AddLink(w, request)
 
 			res := w.Result()
 
@@ -208,9 +208,9 @@ func TestAddLinks(t *testing.T) {
 
 			d, _ := adapters.NewLinksRepository(c, logger)
 			l := services.NewLinksService(c, d)
-			h := GetHandlers(l)
+			h := NewLinksHandlers(l)
 
-			h.addLinks(w, request)
+			h.AddLinks(w, request)
 
 			res := w.Result()
 
@@ -268,7 +268,7 @@ func TestGetLink(t *testing.T) {
 
 			d, _ := adapters.NewLinksRepository(c, logger)
 			l := services.NewLinksService(c, d)
-			h := GetHandlers(l)
+			h := NewLinksHandlers(l)
 
 			addedLink := models.AddedLink{
 				Short:  u.String(),
@@ -285,7 +285,7 @@ func TestGetLink(t *testing.T) {
 			request.SetPathValue("id", id)
 
 			w := httptest.NewRecorder()
-			h.getLink(w, request)
+			h.GetLink(w, request)
 
 			res := w.Result()
 

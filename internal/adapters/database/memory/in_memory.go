@@ -4,23 +4,14 @@ import (
 	"context"
 	"fmt"
 	"go.uber.org/zap"
+	"main/internal/interfaces"
 	"main/internal/models"
 )
 
-type producer interface {
-	WriteEvent(event *models.Event) error
-	Close() error
-}
-
-type consumer interface {
-	ReadAllEvents() ([]*models.Event, error)
-	Close() error
-}
-
 type InMemoryDB struct {
 	links      map[string]string
-	producerFS producer
-	consumerFS consumer
+	producerFS interfaces.FileStorageProducer
+	consumerFS interfaces.FileStorageConsumer
 }
 
 func NewInMemoryRepository(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) {
@@ -32,7 +23,6 @@ func NewInMemoryRepository(path string, logger *zap.SugaredLogger) (*InMemoryDB,
 		)
 		return nil, err
 	}
-
 	consumerFS, err := NewFileConsumer(path)
 	if err != nil {
 		logger.Infow(
@@ -41,13 +31,11 @@ func NewInMemoryRepository(path string, logger *zap.SugaredLogger) (*InMemoryDB,
 		)
 		return nil, err
 	}
-
 	db := InMemoryDB{
 		links:      make(map[string]string),
 		producerFS: producerFS,
 		consumerFS: consumerFS,
 	}
-
 	err = db.loadFromFile()
 	if err != nil {
 		logger.Infow(

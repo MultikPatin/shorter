@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"main/internal/config"
+	"main/internal/interfaces"
 	"main/internal/models"
 	"net/url"
 	"time"
@@ -18,20 +19,12 @@ const (
 	delimiter = "/"
 )
 
-type LinksRepository interface {
-	Add(ctx context.Context, addedLink models.AddedLink) (string, error)
-	AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error)
-	Get(ctx context.Context, short string) (string, error)
-	Close() error
-	Ping() error
-}
-
 type LinksService struct {
-	linksRepository LinksRepository
+	linksRepository interfaces.LinksRepository
 	shortPre        string
 }
 
-func NewLinksService(c *config.Config, linksRepository LinksRepository) *LinksService {
+func NewLinksService(c *config.Config, linksRepository interfaces.LinksRepository) *LinksService {
 	return &LinksService{
 		linksRepository: linksRepository,
 		shortPre:        c.ShortLinkPrefix,

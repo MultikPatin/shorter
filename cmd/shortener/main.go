@@ -22,8 +22,8 @@ func main() {
 	linksService := services.NewLinksService(c, linksRepository)
 	defer linksService.Close()
 
-	h := app.GetHandlers(linksService)
-	r := app.GetRouters(h)
+	h := app.NewLinksHandlers(linksService)
+	r := app.NewRouters(h)
 
 	logger.Infow(
 		"Starting server",

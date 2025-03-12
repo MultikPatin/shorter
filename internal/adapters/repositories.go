@@ -5,11 +5,11 @@ import (
 	"main/internal/adapters/database/memory"
 	"main/internal/adapters/database/psql"
 	"main/internal/config"
-	"main/internal/services"
+	"main/internal/interfaces"
 )
 
-func NewLinksRepository(c *config.Config, logger *zap.SugaredLogger) (services.LinksRepository, error) {
-	var repository services.LinksRepository
+func NewLinksRepository(c *config.Config, logger *zap.SugaredLogger) (interfaces.LinksRepository, error) {
+	var repository interfaces.LinksRepository
 	var err error
 
 	if c.PostgresDNS == nil {
