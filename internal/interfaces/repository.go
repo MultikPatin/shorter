@@ -22,3 +22,8 @@ type FileStorageConsumer interface {
 	ReadAllEvents() ([]*models.Event, error)
 	Close() error
 }
+
+type UsersRepository interface {
+	Login(ctx context.Context) (int, error)
+	Close() error
+}

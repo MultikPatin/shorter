@@ -10,4 +10,10 @@ type LinksService interface {
 	AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error)
 	Get(ctx context.Context, shortLink string) (string, error)
 	Ping() error
+	Close() error
+}
+
+type UsersService interface {
+	Login(ctx context.Context) (int, error)
+	Close() error
 }

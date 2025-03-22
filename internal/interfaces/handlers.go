@@ -9,3 +9,7 @@ type LinkHandlers interface {
 	GetLink(w http.ResponseWriter, r *http.Request)
 	Ping(w http.ResponseWriter, r *http.Request)
 }
+
+type UsersHandlers interface {
+	Login(w http.ResponseWriter, r *http.Request)
+}

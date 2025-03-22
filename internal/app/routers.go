@@ -2,25 +2,26 @@ package app
 
 import (
 	"github.com/go-chi/chi/v5"
-	"main/internal/interfaces"
 	"main/internal/middleware"
 )
 
-func NewRouters(h interfaces.LinkHandlers) *chi.Mux {
+func NewRouters(h *Handlers) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.AccessLogger)
 	r.Use(middleware.GZipper)
+	r.Use(middleware.Authentication)
 
 	r.Route("/", func(r chi.Router) {
-		r.Get("/ping", h.Ping)
-		r.Post("/", h.AddLinkInText)
+		r.Post("/login", h.users.Login)
+		r.Get("/ping", h.links.Ping)
+		r.Post("/", h.links.AddLinkInText)
 		r.Route("/{id}", func(r chi.Router) {
-			r.Get("/", h.GetLink)
+			r.Get("/", h.links.GetLink)
 		})
 		r.Route("/api", func(r chi.Router) {
 			r.Route("/shorten", func(r chi.Router) {
-				r.Post("/", h.AddLink)
-				r.Post("/batch", h.AddLinks)
+				r.Post("/", h.links.AddLink)
+				r.Post("/batch", h.links.AddLinks)
 			})
 		})
 	})
