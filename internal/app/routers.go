@@ -9,7 +9,7 @@ func NewRouters(h *Handlers) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.AccessLogger)
 	r.Use(middleware.GZipper)
-	//r.Use(middleware.Authentication)
+	r.Use(middleware.Authentication)
 
 	r.Route("/", func(r chi.Router) {
 		r.Post("/login", h.users.Login)

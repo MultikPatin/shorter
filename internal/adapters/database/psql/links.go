@@ -23,7 +23,9 @@ func NewLinksRepository(db *PostgresDB) *LinksRepository {
 }
 
 func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
-	_, err := r.db.Connection.ExecContext(ctx, addShortLink, addedLink.Short, addedLink.Origin)
+	userID := ctx.Value("userID").(int)
+
+	_, err := r.db.Connection.ExecContext(ctx, addShortLink, addedLink.Short, addedLink.Origin, userID)
 	if err == nil {
 		return addedLink.Short, nil
 	}
@@ -43,6 +45,8 @@ func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (
 }
 
 func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
+	userID := ctx.Value("userID").(int)
+
 	tx, err := r.db.Connection.Begin()
 	if err != nil {
 		return nil, err
@@ -51,7 +55,7 @@ func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.Adde
 	var results []models.Result
 
 	for _, link := range addedLinks {
-		_, err := r.db.Connection.ExecContext(ctx, addShortLink, link.Short, link.Origin)
+		_, err := r.db.Connection.ExecContext(ctx, addShortLink, link.Short, link.Origin, userID)
 		if err != nil {
 			tx.Rollback()
 			return nil, err

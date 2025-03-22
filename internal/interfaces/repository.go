@@ -26,5 +26,5 @@ type FileStorageConsumer interface {
 }
 
 type UsersRepository interface {
-	Login(ctx context.Context) (int, error)
+	Login(ctx context.Context) (int64, error)
 }

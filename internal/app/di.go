@@ -125,8 +125,8 @@ func NewInMemoryRepository(db *memory.InMemoryDB) *Repository {
 
 func NewPostgresRepository(db *psql.PostgresDB) *Repository {
 	return &Repository{
-		links: psql.NewLinksRepository(db),
-		//users:    psql.NewUserRepository(db),
+		links:    psql.NewLinksRepository(db),
+		users:    psql.NewUsersRepository(db),
 		health:   psql.NewHealthRepository(db),
 		Database: db,
 	}

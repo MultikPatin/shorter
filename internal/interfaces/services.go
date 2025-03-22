@@ -16,5 +16,5 @@ type LinksService interface {
 }
 
 type UsersService interface {
-	Login(ctx context.Context) (int, error)
+	Login(ctx context.Context) (int64, error)
 }

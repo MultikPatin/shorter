@@ -1,6 +1,7 @@
 package app
 
 import (
+	"main/internal/constants"
 	"main/internal/interfaces"
 	"net/http"
 )
@@ -25,6 +26,6 @@ func (h *HealthHandlers) Ping(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Database not available", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("content-type", textContentType)
+	w.Header().Set("content-type", constants.TextContentType)
 	w.WriteHeader(http.StatusOK)
 }

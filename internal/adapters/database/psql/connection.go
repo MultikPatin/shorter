@@ -61,7 +61,7 @@ func NewPostgresDB(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*PostgresDB
 }
 
 func migrate(ctx context.Context, conn *sql.DB) error {
-	_, err := conn.ExecContext(ctx, createLinksTable)
+	_, err := conn.ExecContext(ctx, createTables)
 	if err != nil {
 		return err
 	}

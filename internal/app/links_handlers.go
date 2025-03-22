@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
 	"main/internal/services"
@@ -35,7 +36,7 @@ func (h *LinksHandlers) GetLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", textContentType)
+	w.Header().Set("content-type", constants.TextContentType)
 	w.Header().Set("Location", originLink)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
@@ -86,7 +87,7 @@ func (h *LinksHandlers) AddLinks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", jsonContentType)
+	w.Header().Set("content-type", constants.JsonContentType)
 	w.WriteHeader(http.StatusCreated)
 	w.Write(resp)
 }
@@ -135,7 +136,7 @@ func (h *LinksHandlers) AddLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", jsonContentType)
+	w.Header().Set("content-type", constants.JsonContentType)
 	w.WriteHeader(status)
 	w.Write(resp)
 }
@@ -169,7 +170,7 @@ func (h *LinksHandlers) AddLinkInText(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("content-type", textContentType)
+	w.Header().Set("content-type", constants.TextContentType)
 	w.WriteHeader(status)
 	w.Write([]byte(response))
 }
