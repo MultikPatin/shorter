@@ -11,6 +11,6 @@ func NewHealthRepository(db *PostgresDB) *HealthRepository {
 }
 
 func (r *HealthRepository) Ping() error {
-	err := r.db.Connection.Ping()
+	err := r.db.Ping()
 	return err
 }
