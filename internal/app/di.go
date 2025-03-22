@@ -32,7 +32,6 @@ type Handlers struct {
 
 type Services struct {
 	links      interfaces.LinksService
-	users      interfaces.UsersService
 	health     interfaces.HealthService
 	Repository *Repository
 }
@@ -73,7 +72,7 @@ func NewApp(c *config.Config) *App {
 }
 
 func NewHandlers(s *Services) *Handlers {
-	middleware.UserService = s.users
+
 	return &Handlers{
 		links:  NewLinksHandlers(s.links),
 		health: NewHealthHandlers(s.health),
@@ -85,9 +84,13 @@ func NewServices(c *config.Config) *Services {
 	if err != nil {
 		panic(err)
 	}
+	if repository.users != nil {
+		middleware.UserService = services.NewUserService(repository.users)
+	} else {
+		middleware.UserService = nil
+	}
 	return &Services{
 		links:      services.NewLinksService(c, repository.links),
-		users:      services.NewUserService(repository.users),
 		health:     services.NewHealthService(repository.health),
 		Repository: repository,
 	}
@@ -116,8 +119,8 @@ func NewRepository(c *config.Config) (*Repository, error) {
 
 func NewInMemoryRepository(db *memory.InMemoryDB) *Repository {
 	return &Repository{
-		links: memory.NewLinksRepository(db),
-		//users:    memory.NewUserRepository(db),
+		links:    memory.NewLinksRepository(db),
+		users:    nil,
 		health:   memory.NewHealthRepository(db),
 		Database: db,
 	}

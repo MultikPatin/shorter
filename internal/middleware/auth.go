@@ -16,30 +16,34 @@ var UserService interfaces.UsersService
 
 func Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("access_token")
-		if err != nil || cookie == nil {
-			userID, err := UserService.Login()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+		if UserService != nil {
+			cookie, err := r.Cookie("access_token")
+			if err != nil || cookie == nil {
+				userID, err := UserService.Login()
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				cookie, err := setJWTCookie(userID)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				next.ServeHTTP(w, r)
+				http.SetCookie(w, cookie)
+			} else {
+				tokenStr := cookie.Value
+				claims, err := verifyJWT(tokenStr)
+				if err != nil {
+					w.Header().Set("content-type", constants.TextContentType)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				ctx := context.WithValue(r.Context(), constants.UserIDKey, claims.UserID)
+				next.ServeHTTP(w, r.WithContext(ctx))
 			}
-			cookie, err := setJWTCookie(userID)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			next.ServeHTTP(w, r)
-			http.SetCookie(w, cookie)
 		} else {
-			tokenStr := cookie.Value
-			claims, err := verifyJWT(tokenStr)
-			if err != nil {
-				w.Header().Set("content-type", constants.TextContentType)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-			ctx := context.WithValue(r.Context(), constants.UserIDKey, claims.UserID)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			next.ServeHTTP(w, r)
 		}
 	})
 }
@@ -51,16 +55,13 @@ func verifyJWT(tokenStr string) (*models.Claims, error) {
 		}
 		return []byte(constants.JwtSecret), nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
-
 	claims, ok := token.Claims.(*models.Claims)
 	if !ok || !token.Valid {
 		return nil, errors.New("invalid token")
 	}
-
 	return claims, nil
 }
 
@@ -87,7 +88,6 @@ func generateJWT(userID int64) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
 	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(constants.JwtSecret)
 	if err != nil {
