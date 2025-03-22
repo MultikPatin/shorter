@@ -17,9 +17,6 @@ func NewRouters(h *Handlers) *chi.Mux {
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", h.links.GetLink)
 		})
-		r.Route("/users", func(r chi.Router) {
-			r.Post("/login", h.users.Login)
-		})
 		r.Route("/api", func(r chi.Router) {
 			r.Route("/shorten", func(r chi.Router) {
 				r.Post("/", h.links.AddLink)

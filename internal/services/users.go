@@ -19,8 +19,8 @@ func NewUserService(usersRepository interfaces.UsersRepository) *UsersService {
 	}
 }
 
-func (s *UsersService) Login(ctx context.Context) (int64, error) {
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+func (s *UsersService) Login() (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	userID, err := s.usersRepository.Login(ctx)

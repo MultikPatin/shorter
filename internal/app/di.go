@@ -7,6 +7,7 @@ import (
 	"main/internal/adapters/database/psql"
 	"main/internal/config"
 	"main/internal/interfaces"
+	"main/internal/middleware"
 	"main/internal/services"
 )
 
@@ -26,7 +27,6 @@ func (a *App) Close() error {
 
 type Handlers struct {
 	links  interfaces.LinkHandlers
-	users  interfaces.UsersHandlers
 	health interfaces.HealthHandlers
 }
 
@@ -73,9 +73,9 @@ func NewApp(c *config.Config) *App {
 }
 
 func NewHandlers(s *Services) *Handlers {
+	middleware.UserService = s.users
 	return &Handlers{
 		links:  NewLinksHandlers(s.links),
-		users:  NewUsersHandlers(s.users),
 		health: NewHealthHandlers(s.health),
 	}
 }

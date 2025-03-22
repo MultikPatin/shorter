@@ -6,22 +6,35 @@ import (
 	"fmt"
 	jwt "github.com/golang-jwt/jwt/v4"
 	"main/internal/constants"
+	"main/internal/interfaces"
 	"main/internal/models"
 	"net/http"
+	"time"
 )
+
+var UserService interfaces.UsersService
 
 func Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("access_token")
 		if err != nil || cookie == nil {
-			http.Redirect(w, r, "/users/login", http.StatusSeeOther)
-			return
+			userID, err := UserService.Login()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			err = setJWTCookie(w, userID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		tokenStr := cookie.Value
 		claims, err := verifyJWT(tokenStr)
 		if err != nil {
-			http.Redirect(w, r, "/users/login", http.StatusSeeOther)
+			w.Header().Set("content-type", constants.TextContentType)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
@@ -48,4 +61,40 @@ func verifyJWT(tokenStr string) (*models.Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func setJWTCookie(w http.ResponseWriter, userID int64) error {
+	tokenStr, err := generateJWT(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+	cookie := http.Cookie{
+		Name:     "access_token",
+		Value:    tokenStr,
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   constants.CookieMaxAge,
+	}
+
+	http.SetCookie(w, &cookie)
+	return nil
+}
+
+func generateJWT(userID int64) (string, error) {
+	expirationTime := time.Now().Add(constants.TokenExp)
+	claims := &models.Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(constants.JwtSecret)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
