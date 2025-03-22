@@ -9,7 +9,7 @@ const (
 		short VARCHAR(255) NOT NULL);
 		CREATE INDEX IF NOT EXISTS origin_index ON events(origin);
 		CREATE TABLE IF NOT EXISTS users (
-		    id SERIAL PRIMARY KEY,
+		    id SERIAL PRIMARY KEY
 		);`
 	// Links
 	addShortLink = `
