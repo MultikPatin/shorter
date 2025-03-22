@@ -59,8 +59,8 @@ func TestAddLinkInText(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			h.AddLinkInText(w, request)
@@ -131,8 +131,8 @@ func TestAddLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			h.AddLink(w, request)
@@ -206,8 +206,8 @@ func TestAddLinks(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten/batch", &buf)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			h.AddLinks(w, request)
@@ -266,8 +266,8 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			addedLink := models.AddedLink{
@@ -275,7 +275,7 @@ func TestGetLink(t *testing.T) {
 				Origin: "test.com",
 			}
 
-			id, err := d.Add(ctx, addedLink)
+			id, err := r.links.Add(ctx, addedLink)
 			if err != nil {
 				t.Fatalf("Failed to add link")
 				return
