@@ -13,16 +13,8 @@ type UsersService struct {
 
 func NewUserService(c *config.Config, usersRepository interfaces.UsersRepository) *UsersService {
 	return &UsersService{
-		usersRepository: UsersRepository,
+		usersRepository: usersRepository,
 	}
-}
-
-func (s *UsersService) Close() error {
-	err := s.usersRepository.Close()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *UsersService) Login(ctx context.Context) (int, error) {
