@@ -2,15 +2,15 @@ package psql
 
 const (
 	createTables = `
+		CREATE TABLE IF NOT EXISTS users (
+		    id SERIAL PRIMARY KEY
+		);
 		CREATE TABLE IF NOT EXISTS events (
 		id SERIAL PRIMARY KEY,
 		user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
 		origin VARCHAR(255) NOT NULL UNIQUE,
 		short VARCHAR(255) NOT NULL);
-		CREATE INDEX IF NOT EXISTS origin_index ON events(origin);
-		CREATE TABLE IF NOT EXISTS users (
-		    id SERIAL PRIMARY KEY
-		);`
+		CREATE INDEX IF NOT EXISTS origin_index ON events(origin);`
 	// Links
 	addShortLink = `
 		INSERT INTO events (short, origin, user_id) 
