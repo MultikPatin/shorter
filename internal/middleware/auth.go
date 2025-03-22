@@ -14,14 +14,14 @@ func Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("access_token")
 		if err != nil || cookie == nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/users/login", http.StatusSeeOther)
 			return
 		}
 
 		tokenStr := cookie.Value
 		claims, err := verifyJWT(tokenStr)
 		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/users/login", http.StatusSeeOther)
 			return
 		}
 
