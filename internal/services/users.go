@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"main/internal/config"
 	"main/internal/interfaces"
 	"time"
 )
@@ -11,7 +10,7 @@ type UsersService struct {
 	usersRepository interfaces.UsersRepository
 }
 
-func NewUserService(c *config.Config, usersRepository interfaces.UsersRepository) *UsersService {
+func NewUserService(usersRepository interfaces.UsersRepository) *UsersService {
 	return &UsersService{
 		usersRepository: usersRepository,
 	}

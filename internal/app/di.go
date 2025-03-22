@@ -87,7 +87,7 @@ func NewServices(c *config.Config) *Services {
 	}
 	return &Services{
 		links:      services.NewLinksService(c, repository.links),
-		users:      services.NewUserService(c, repository.users),
+		users:      services.NewUserService(repository.users),
 		health:     services.NewHealthService(repository.health),
 		Repository: repository,
 	}
