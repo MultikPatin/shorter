@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"main/internal/adapters"
 	"main/internal/config"
+	"main/internal/constants"
 	"main/internal/models"
 	"main/internal/services"
 	"net/http"
@@ -36,7 +37,7 @@ func TestAddLinkInText(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusCreated,
 			},
 			req: req{
@@ -46,7 +47,7 @@ func TestAddLinkInText(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{
@@ -92,7 +93,7 @@ func TestAddLink(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: jsonContentType,
+				contentType: constants.JSONContentType,
 				statusCode:  http.StatusCreated,
 			},
 			req: req{
@@ -103,7 +104,7 @@ func TestAddLink(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{
@@ -114,7 +115,7 @@ func TestAddLink(t *testing.T) {
 		{
 			name: "wrong body",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusBadRequest,
 			},
 			req: req{
@@ -164,7 +165,7 @@ func TestAddLinks(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: jsonContentType,
+				contentType: constants.JSONContentType,
 				statusCode:  http.StatusCreated,
 			},
 			req: req{
@@ -178,7 +179,7 @@ func TestAddLinks(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{
@@ -189,7 +190,7 @@ func TestAddLinks(t *testing.T) {
 		{
 			name: "wrong body",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusBadRequest,
 			},
 			req: req{
@@ -238,7 +239,7 @@ func TestGetLink(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusTemporaryRedirect,
 			},
 			req: req{
@@ -248,7 +249,7 @@ func TestGetLink(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{

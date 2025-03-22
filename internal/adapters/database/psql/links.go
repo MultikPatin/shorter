@@ -23,7 +23,7 @@ func NewLinksRepository(db *PostgresDB) *LinksRepository {
 }
 
 func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
-	userID := ctx.Value("userID").(int)
+	userID := ctx.Value("UserID").(int)
 
 	_, err := r.db.Connection.ExecContext(ctx, addShortLink, addedLink.Short, addedLink.Origin, userID)
 	if err == nil {
@@ -45,7 +45,7 @@ func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (
 }
 
 func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
-	userID := ctx.Value("userID").(int)
+	userID := ctx.Value("UserID").(int)
 
 	tx, err := r.db.Connection.Begin()
 	if err != nil {

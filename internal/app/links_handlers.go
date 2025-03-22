@@ -87,7 +87,7 @@ func (h *LinksHandlers) AddLinks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", constants.JsonContentType)
+	w.Header().Set("content-type", constants.JSONContentType)
 	w.WriteHeader(http.StatusCreated)
 	w.Write(resp)
 }
@@ -136,7 +136,7 @@ func (h *LinksHandlers) AddLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", constants.JsonContentType)
+	w.Header().Set("content-type", constants.JSONContentType)
 	w.WriteHeader(status)
 	w.Write(resp)
 }
