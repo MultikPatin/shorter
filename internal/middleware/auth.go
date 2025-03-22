@@ -25,7 +25,7 @@ func Authentication(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "UserID", claims.UserID)
+		ctx := context.WithValue(r.Context(), constants.UserIDKey, claims.UserID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
