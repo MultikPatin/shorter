@@ -28,18 +28,18 @@ func Authentication(next http.Handler) http.Handler {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			next.ServeHTTP(w, r)
+		} else {
+			tokenStr := cookie.Value
+			claims, err := verifyJWT(tokenStr)
+			if err != nil {
+				w.Header().Set("content-type", constants.TextContentType)
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			ctx := context.WithValue(r.Context(), constants.UserIDKey, claims.UserID)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		}
-
-		tokenStr := cookie.Value
-		claims, err := verifyJWT(tokenStr)
-		if err != nil {
-			w.Header().Set("content-type", constants.TextContentType)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), constants.UserIDKey, claims.UserID)
-		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
