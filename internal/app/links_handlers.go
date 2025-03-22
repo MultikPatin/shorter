@@ -11,11 +11,6 @@ import (
 	"net/http"
 )
 
-const (
-	textContentType = "text/plain; charset=utf-8"
-	jsonContentType = "application/json"
-)
-
 func NewLinksHandlers(s interfaces.LinksService) *LinksHandlers {
 	return &LinksHandlers{
 		linksService: s,
@@ -177,20 +172,4 @@ func (h *LinksHandlers) AddLinkInText(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", textContentType)
 	w.WriteHeader(status)
 	w.Write([]byte(response))
-}
-
-func (h *LinksHandlers) Ping(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := h.linksService.Ping()
-	if err != nil {
-		http.Error(w, "Database not available", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("content-type", textContentType)
-	w.WriteHeader(http.StatusOK)
 }

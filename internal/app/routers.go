@@ -13,7 +13,7 @@ func NewRouters(h *Handlers) *chi.Mux {
 
 	r.Route("/", func(r chi.Router) {
 		r.Post("/login", h.users.Login)
-		r.Get("/ping", h.links.Ping)
+		r.Get("/ping", h.health.Ping)
 		r.Post("/", h.links.AddLinkInText)
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", h.links.GetLink)

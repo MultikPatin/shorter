@@ -31,19 +31,6 @@ func NewLinksService(c *config.Config, linksRepository interfaces.LinksRepositor
 	}
 }
 
-func (s *LinksService) Ping() error {
-	err := s.linksRepository.Ping()
-	return err
-}
-
-func (s *LinksService) Close() error {
-	err := s.linksRepository.Close()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, host string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()

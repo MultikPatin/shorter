@@ -10,11 +10,11 @@ import (
 )
 
 type PostgresDB struct {
-	conn *sql.DB
+	Connection *sql.DB
 }
 
 func (p *PostgresDB) Close() error {
-	err := p.conn.Close()
+	err := p.Connection.Close()
 	if err != nil {
 		return err
 	}
@@ -22,11 +22,11 @@ func (p *PostgresDB) Close() error {
 }
 
 func (p *PostgresDB) Ping() error {
-	err := p.conn.Ping()
+	err := p.Connection.Ping()
 	return err
 }
 
-func NewPostgresConnection(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*PostgresDB, error) {
+func NewPostgresDB(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*PostgresDB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -42,7 +42,7 @@ func NewPostgresConnection(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*Po
 	conn, err := sql.Open("pgx", ps)
 	if err != nil {
 		logger.Infow(
-			"Create Postgres connection",
+			"Create Postgres Connection",
 			"error", err.Error(),
 		)
 	}
@@ -55,7 +55,7 @@ func NewPostgresConnection(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*Po
 		)
 	}
 	postgresDB := PostgresDB{
-		conn: conn,
+		Connection: conn,
 	}
 	return &postgresDB, err
 }
