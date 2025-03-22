@@ -23,12 +23,13 @@ func Authentication(next http.Handler) http.Handler {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			err = setJWTCookie(w, userID)
+			cookie, err := setJWTCookie(userID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			next.ServeHTTP(w, r)
+			http.SetCookie(w, cookie)
 		} else {
 			tokenStr := cookie.Value
 			claims, err := verifyJWT(tokenStr)
@@ -63,11 +64,10 @@ func verifyJWT(tokenStr string) (*models.Claims, error) {
 	return claims, nil
 }
 
-func setJWTCookie(w http.ResponseWriter, userID int64) error {
+func setJWTCookie(userID int64) (*http.Cookie, error) {
 	tokenStr, err := generateJWT(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil
+		return nil, err
 	}
 	cookie := http.Cookie{
 		Name:     "access_token",
@@ -76,9 +76,7 @@ func setJWTCookie(w http.ResponseWriter, userID int64) error {
 		HttpOnly: true,
 		MaxAge:   constants.CookieMaxAge,
 	}
-
-	http.SetCookie(w, &cookie)
-	return nil
+	return &cookie, nil
 }
 
 func generateJWT(userID int64) (string, error) {
