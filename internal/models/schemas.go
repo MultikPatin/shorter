@@ -16,3 +16,8 @@ type ShortensResponse struct {
 	CorrelationID string `json:"correlation_id,omitempty"`
 	Result        string `json:"short_url"`
 }
+
+type UserLinksResponse struct {
+	Shorten  string `json:"short_url"`
+	Original string `json:"original_url"`
+}

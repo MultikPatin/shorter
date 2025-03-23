@@ -28,11 +28,13 @@ func (a *App) Close() error {
 type Handlers struct {
 	links  interfaces.LinkHandlers
 	health interfaces.HealthHandlers
+	users  interfaces.UsersHandlers
 }
 
 type Services struct {
 	links      interfaces.LinksService
 	health     interfaces.HealthService
+	users      interfaces.UsersService
 	Repository *Repository
 }
 
@@ -75,6 +77,7 @@ func NewHandlers(s *Services) *Handlers {
 	return &Handlers{
 		links:  NewLinksHandlers(s.links),
 		health: NewHealthHandlers(s.health),
+		users:  NewUsersHandlers(s.users),
 	}
 }
 
@@ -91,6 +94,7 @@ func NewServices(c *config.Config) *Services {
 	return &Services{
 		links:      services.NewLinksService(c, repository.links),
 		health:     services.NewHealthService(repository.health),
+		users:      services.NewUserService(repository.users),
 		Repository: repository,
 	}
 }
@@ -105,12 +109,14 @@ func NewRepository(c *config.Config) (*Repository, error) {
 		if err != nil {
 			return nil, err
 		}
+		logger.Info("Create InMemoryDB Connection")
 		repository = NewInMemoryRepository(db)
 	} else {
 		db, err := psql.NewPostgresDB(c.PostgresDNS, logger)
 		if err != nil {
 			return nil, err
 		}
+		logger.Info("Create PostgresDB Connection")
 		repository = NewPostgresRepository(db)
 	}
 	return repository, nil

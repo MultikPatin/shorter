@@ -15,3 +15,8 @@ type Result struct {
 	CorrelationID string
 	Result        string
 }
+
+type UserLinks struct {
+	Shorten  string
+	Original string
+}

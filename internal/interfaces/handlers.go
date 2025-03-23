@@ -14,5 +14,5 @@ type LinkHandlers interface {
 }
 
 type UsersHandlers interface {
-	Login(w http.ResponseWriter, r *http.Request)
+	GetLinks(w http.ResponseWriter, r *http.Request)
 }

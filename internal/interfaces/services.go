@@ -17,4 +17,5 @@ type LinksService interface {
 
 type UsersService interface {
 	Login() (int64, error)
+	GetLinks(ctx context.Context) ([]models.UserLinks, error)
 }
