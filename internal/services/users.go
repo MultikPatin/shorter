@@ -32,13 +32,23 @@ func (s *UsersService) Login() (int64, error) {
 	return userID, nil
 }
 
-func (s *UsersService) GetLinks(ctx context.Context) ([]models.UserLinks, error) {
+func (s *UsersService) GetLinks(ctx context.Context, host string) ([]models.UserLinks, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	links, err := s.usersRepository.GetLinks(ctx)
+	var links []models.UserLinks
+
+	results, err := s.usersRepository.GetLinks(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("links not found: %w", err)
 	}
+	for _, result := range results {
+		link := models.UserLinks{
+			Shorten:  getResponseLink(result.Shorten, shortPre, urlPrefix+host),
+			Original: result.Original,
+		}
+		links = append(links, link)
+	}
+
 	return links, nil
 }

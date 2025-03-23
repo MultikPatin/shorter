@@ -28,7 +28,7 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 
 	var responses []models.UserLinksResponse
 
-	results, err := h.usersService.GetLinks(ctx)
+	results, err := h.usersService.GetLinks(ctx, r.Host)
 	if err != nil {
 		http.Error(w, "Links not found", http.StatusInternalServerError)
 		return
