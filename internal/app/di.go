@@ -72,7 +72,6 @@ func NewApp(c *config.Config) *App {
 }
 
 func NewHandlers(s *Services) *Handlers {
-
 	return &Handlers{
 		links:  NewLinksHandlers(s.links),
 		health: NewHealthHandlers(s.health),

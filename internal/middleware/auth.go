@@ -29,8 +29,8 @@ func Authentication(next http.Handler) http.Handler {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				next.ServeHTTP(w, r)
 				http.SetCookie(w, cookie)
+				next.ServeHTTP(w, r)
 			} else {
 				tokenStr := cookie.Value
 				claims, err := verifyJWT(tokenStr)
@@ -89,8 +89,9 @@ func generateJWT(userID int64) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(constants.JwtSecret)
+	tokenString, err := token.SignedString([]byte(constants.JwtSecret))
 	if err != nil {
+		fmt.Println(err)
 		return "", err
 	}
 
