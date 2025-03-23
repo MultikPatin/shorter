@@ -30,7 +30,8 @@ func Authentication(next http.Handler) http.Handler {
 					return
 				}
 				http.SetCookie(w, cookie)
-				next.ServeHTTP(w, r)
+				ctx := context.WithValue(r.Context(), constants.UserIDKey, userID)
+				next.ServeHTTP(w, r.WithContext(ctx))
 			} else {
 				tokenStr := cookie.Value
 				claims, err := verifyJWT(tokenStr)
