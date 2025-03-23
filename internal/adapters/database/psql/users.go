@@ -37,6 +37,7 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 
 	var links []models.UserLinks
 	userID := ctx.Value(constants.UserIDKey).(int64)
+	fmt.Println(userID)
 
 	rows, err := r.db.Connection.QueryContext(ctx, getLinksByUser, userID)
 	if errors.Is(err, sql.ErrNoRows) {

@@ -27,5 +27,5 @@ const (
 	addUser = `
 		INSERT INTO users DEFAULT VALUES RETURNING id;`
 	getLinksByUser = `
-		SELECT shorten, original FROM events WHERE user_id = $1;`
+		SELECT short, origin FROM events WHERE user_id = $1;`
 )
