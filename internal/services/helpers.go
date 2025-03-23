@@ -2,12 +2,8 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"main/internal/constants"
 	"net/url"
-)
-
-const (
-	urlPrefix = "http://"
-	delimiter = "/"
 )
 
 var shortPre string
@@ -21,9 +17,9 @@ func getKey(u uuid.UUID, p string) string {
 
 func getResponseLink(k string, p string, h string) string {
 	if isURL(p) {
-		return p + delimiter + k + delimiter
+		return p + constants.Delimiter + k + constants.Delimiter
 	}
-	return h + delimiter + k + delimiter
+	return h + constants.Delimiter + k + constants.Delimiter
 }
 
 func isURL(str string) bool {

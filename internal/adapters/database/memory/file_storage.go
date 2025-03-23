@@ -4,15 +4,10 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"main/internal/constants"
 	"main/internal/models"
 	"os"
 	"path/filepath"
-)
-
-const (
-	defaultFilePermissions   = 0666
-	defaultProducerFileFlags = os.O_RDWR | os.O_CREATE | os.O_APPEND
-	defaultConsumerFileFlags = os.O_RDONLY | os.O_CREATE
 )
 
 type FileProducer struct {
@@ -25,7 +20,7 @@ type FileConsumer struct {
 }
 
 func NewFileProducer(path string) (*FileProducer, error) {
-	file, err := newFile(path, defaultProducerFileFlags, defaultFilePermissions)
+	file, err := newFile(path, constants.DefaultProducerFileFlags, constants.DefaultFilePermissions)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +32,7 @@ func NewFileProducer(path string) (*FileProducer, error) {
 }
 
 func NewFileConsumer(path string) (*FileConsumer, error) {
-	file, err := newFile(path, defaultConsumerFileFlags, defaultFilePermissions)
+	file, err := newFile(path, constants.DefaultConsumerFileFlags, constants.DefaultFilePermissions)
 	if err != nil {
 		return nil, err
 	}

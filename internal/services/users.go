@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
 	"time"
@@ -45,7 +46,7 @@ func (s *UsersService) GetLinks(ctx context.Context, host string) ([]models.User
 	}
 	for _, result := range results {
 		link := models.UserLinks{
-			Shorten:  getResponseLink(result.Shorten, shortPre, urlPrefix+host),
+			Shorten:  getResponseLink(result.Shorten, shortPre, constants.UrlPrefix+host),
 			Original: result.Original,
 		}
 		links = append(links, link)

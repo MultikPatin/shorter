@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"github.com/google/uuid"
-	"main/internal/adapters"
 	"main/internal/config"
 	"main/internal/constants"
 	"main/internal/models"
@@ -19,7 +18,6 @@ import (
 var c = &config.Config{
 	StorageFilePaths: "test.json",
 }
-var logger = adapters.GetLogger()
 
 func TestAddLinkInText(t *testing.T) {
 	type want struct {

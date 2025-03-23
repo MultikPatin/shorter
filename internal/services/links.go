@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"main/internal/config"
+	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
 	"time"
@@ -41,12 +42,12 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 	id, err := s.linksRepository.Add(ctx, addedLink)
 	if err != nil {
 		if errors.Is(err, ErrConflict) {
-			return getResponseLink(id, shortPre, urlPrefix+host), err
+			return getResponseLink(id, shortPre, constants.UrlPrefix+host), err
 		} else {
 			return "", fmt.Errorf("failed to add link: %w", err)
 		}
 	}
-	return getResponseLink(id, shortPre, urlPrefix+host), nil
+	return getResponseLink(id, shortPre, constants.UrlPrefix+host), nil
 }
 
 func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error) {
@@ -84,7 +85,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 	for _, result := range results {
 		response := models.Result{
 			CorrelationID: result.CorrelationID,
-			Result:        getResponseLink(result.Result, shortPre, urlPrefix+host),
+			Result:        getResponseLink(result.Result, shortPre, constants.UrlPrefix+host),
 		}
 		responseLinks = append(responseLinks, response)
 	}
