@@ -15,4 +15,5 @@ type LinkHandlers interface {
 
 type UsersHandlers interface {
 	GetLinks(w http.ResponseWriter, r *http.Request)
+	DeleteLinks(w http.ResponseWriter, r *http.Request)
 }

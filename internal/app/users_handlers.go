@@ -57,3 +57,17 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 	w.Write(resp)
 }
+
+func (h *UsersHandlers) DeleteLinks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	if r.Method != http.MethodDelete {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	h.usersService.DeleteLinks(ctx)
+
+	w.Header().Set("content-type", constants.TextContentType)
+	w.WriteHeader(http.StatusAccepted)
+}

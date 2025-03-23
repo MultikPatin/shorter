@@ -28,4 +28,5 @@ type FileStorageConsumer interface {
 type UsersRepository interface {
 	Login(ctx context.Context) (int64, error)
 	GetLinks(ctx context.Context) ([]models.UserLinks, error)
+	DeleteLinks(ctx context.Context)
 }

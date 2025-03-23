@@ -58,3 +58,33 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 	}
 	return links, nil
 }
+
+func (r *UsersRepository) DeleteLinks(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	//var links []models.UserLinks
+	//userID := ctx.Value(constants.UserIDKey).(int64)
+	//
+	//rows, err := r.db.Connection.QueryContext(ctx, getLinksByUser, userID)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer rows.Close()
+	//
+	//for rows.Next() {
+	//	var link models.UserLinks
+	//	err := rows.Scan(&link.Shorten, &link.Original)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	links = append(links, link)
+	//}
+	//if err := rows.Err(); err != nil {
+	//	return nil, err
+	//}
+	//if len(links) == 0 {
+	//	return nil, services.ErrNoLinksByUser
+	//}
+	return
+}
