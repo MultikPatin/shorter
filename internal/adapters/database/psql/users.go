@@ -59,7 +59,7 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 	return links, nil
 }
 
-func (r *UsersRepository) DeleteLinks(ctx context.Context) {
+func (r *UsersRepository) DeleteLinks(ctx context.Context, shortLinks []string) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 

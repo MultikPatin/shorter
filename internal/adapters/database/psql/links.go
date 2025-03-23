@@ -73,11 +73,16 @@ func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.Adde
 
 func (r *LinksRepository) Get(ctx context.Context, short string) (string, error) {
 	var originalLink string
-	err := r.db.Connection.QueryRowContext(ctx, getShortLink, short).Scan(&originalLink)
+	var isDeleted bool
+
+	err := r.db.Connection.QueryRowContext(ctx, getShortLink, short).Scan(&originalLink, &isDeleted)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", fmt.Errorf("link with short %s not found", short)
 	} else if err != nil {
 		return "", err
+	}
+	if isDeleted {
+		return "", services.ErrDeletedLink
 	}
 	return originalLink, nil
 }

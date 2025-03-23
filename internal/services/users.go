@@ -55,10 +55,10 @@ func (s *UsersService) GetLinks(ctx context.Context, host string) ([]models.User
 	return links, nil
 }
 
-func (s *UsersService) DeleteLinks(ctx context.Context) {
+func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	s.usersRepository.DeleteLinks(ctx)
+	s.usersRepository.DeleteLinks(ctx, shortLinks)
 	return
 }

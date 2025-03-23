@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-var ErrConflict = errors.New("data conflict")
+var (
+	ErrConflict    = errors.New("data conflict")
+	ErrDeletedLink = errors.New("link is deleted")
+)
 
 type LinksService struct {
 	linksRepository interfaces.LinksRepository

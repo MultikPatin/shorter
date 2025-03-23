@@ -66,7 +66,9 @@ func (h *UsersHandlers) DeleteLinks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.usersService.DeleteLinks(ctx)
+	var shortLinks []string
+
+	h.usersService.DeleteLinks(ctx, shortLinks)
 
 	w.Header().Set("content-type", constants.TextContentType)
 	w.WriteHeader(http.StatusAccepted)

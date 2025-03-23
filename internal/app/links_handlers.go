@@ -32,7 +32,11 @@ func (h *LinksHandlers) GetLink(w http.ResponseWriter, r *http.Request) {
 
 	originLink, err := h.linksService.Get(ctx, r.PathValue("id"))
 	if err != nil {
-		http.Error(w, "Origin not found", http.StatusNotFound)
+		if errors.Is(err, services.ErrDeletedLink) {
+			http.Error(w, "Origin is deleted", http.StatusGone)
+		} else {
+			http.Error(w, "Origin not found", http.StatusNotFound)
+		}
 		return
 	}
 
