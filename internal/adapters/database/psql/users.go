@@ -42,13 +42,6 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 	}
 	defer rows.Close()
 
-	if !rows.Next() {
-		if err := rows.Err(); err != nil {
-			return nil, err
-		}
-		return nil, services.ErrNoLinksByUser
-	}
-
 	for rows.Next() {
 		var link models.UserLinks
 		err := rows.Scan(&link.Shorten, &link.Original)
@@ -59,6 +52,9 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
+	}
+	if len(links) == 0 {
+		return nil, services.ErrNoLinksByUser
 	}
 	return links, nil
 }
