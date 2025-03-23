@@ -10,6 +10,7 @@ import (
 )
 
 var ErrAddUser = errors.New("failed to insert user")
+var ErrNoLinksByUser = errors.New("links by userID %d not found")
 
 type UsersService struct {
 	usersRepository interfaces.UsersRepository

@@ -2,16 +2,12 @@ package psql
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"main/internal/constants"
 	"main/internal/models"
+	"main/internal/services"
 	"time"
 )
-
-var ErrNoLinksByUser = errors.New("links by userID %d not found")
 
 type UsersRepository struct {
 	db *PostgresDB
@@ -39,15 +35,19 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 
 	var links []models.UserLinks
 	userID := ctx.Value(constants.UserIDKey).(int64)
-	fmt.Println(userID)
 
 	rows, err := r.db.Connection.QueryContext(ctx, getLinksByUser, userID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrNoLinksByUser
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+		return nil, services.ErrNoLinksByUser
+	}
 
 	for rows.Next() {
 		var link models.UserLinks

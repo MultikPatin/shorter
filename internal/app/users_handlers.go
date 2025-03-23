@@ -3,10 +3,10 @@ package app
 import (
 	"encoding/json"
 	"errors"
-	"main/internal/adapters/database/psql"
 	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
+	"main/internal/services"
 	"net/http"
 )
 
@@ -34,7 +34,7 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 
 	results, err := h.usersService.GetLinks(ctx, r.Host)
 	if err != nil {
-		if errors.Is(err, psql.ErrNoLinksByUser) {
+		if errors.Is(err, services.ErrNoLinksByUser) {
 			status = http.StatusNoContent
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -43,8 +43,8 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, result := range results {
-		shortensResponse := models.UserLinksResponse(result)
-		responses = append(responses, shortensResponse)
+		response := models.UserLinksResponse(result)
+		responses = append(responses, response)
 	}
 
 	resp, err := json.Marshal(responses)
