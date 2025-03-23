@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var ErrNoLinksByUser = errors.New("links by userID %d not found")
+
 type UsersRepository struct {
 	db *PostgresDB
 }
@@ -41,7 +43,7 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 
 	rows, err := r.db.Connection.QueryContext(ctx, getLinksByUser, userID)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("links by userID %d not found", userID)
+		return nil, ErrNoLinksByUser
 	} else if err != nil {
 		return nil, err
 	}

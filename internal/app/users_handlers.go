@@ -2,6 +2,8 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
+	"main/internal/adapters/database/psql"
 	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
@@ -28,10 +30,16 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 
 	var responses []models.UserLinksResponse
 
+	status := http.StatusOK
+
 	results, err := h.usersService.GetLinks(ctx, r.Host)
 	if err != nil {
-		http.Error(w, "Links not found", http.StatusInternalServerError)
-		return
+		if errors.Is(err, psql.ErrNoLinksByUser) {
+			status = http.StatusNoContent
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	for _, result := range results {
@@ -46,6 +54,6 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("content-type", constants.JSONContentType)
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(status)
 	w.Write(resp)
 }
