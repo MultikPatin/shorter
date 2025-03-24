@@ -29,5 +29,6 @@ const (
 		INSERT INTO users DEFAULT VALUES RETURNING id;`
 	getLinksByUser = `
 		SELECT short, origin FROM events WHERE user_id = $1;`
-	deleteLinksByUser = ``
+	deleteLinksByUser = `
+		UPDATE events SET is_deleted = true WHERE short = $1 AND user_id = $2;`
 )

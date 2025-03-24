@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"main/internal/constants"
 	"main/internal/models"
@@ -24,7 +25,7 @@ func (r *UsersRepository) Login(ctx context.Context) (int64, error) {
 
 	err := r.db.Connection.QueryRowContext(ctx, addUser).Scan(&userID)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("не удалось добавить пользователя: %w", err)
 	}
 	return userID, nil
 }
@@ -38,7 +39,7 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 
 	rows, err := r.db.Connection.QueryContext(ctx, getLinksByUser, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("не удалось полчить ссылки пользователя: %w", err)
 	}
 	defer rows.Close()
 
@@ -59,32 +60,25 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 	return links, nil
 }
 
-func (r *UsersRepository) DeleteLinks(ctx context.Context, shortLinks []string) {
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
+func (r *UsersRepository) DeleteLinks(ctx context.Context, shortLinks []string) error {
+	userID := ctx.Value(constants.UserIDKey).(int64)
 
-	//var links []models.UserLinks
-	//userID := ctx.Value(constants.UserIDKey).(int64)
-	//
-	//rows, err := r.db.Connection.QueryContext(ctx, getLinksByUser, userID)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer rows.Close()
-	//
-	//for rows.Next() {
-	//	var link models.UserLinks
-	//	err := rows.Scan(&link.Shorten, &link.Original)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	links = append(links, link)
-	//}
-	//if err := rows.Err(); err != nil {
-	//	return nil, err
-	//}
-	//if len(links) == 0 {
-	//	return nil, services.ErrNoLinksByUser
-	//}
-	return
+	tx, err := r.db.Connection.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("не удалось начать транзакцию: %w", err)
+	}
+
+	for _, link := range shortLinks {
+		_, err := tx.ExecContext(ctx, deleteLinksByUser, link, userID)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("не удалось подтвердить транзакцию: %w", err)
+	}
+
+	return nil
 }

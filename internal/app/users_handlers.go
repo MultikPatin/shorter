@@ -61,14 +61,23 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 func (h *UsersHandlers) DeleteLinks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	if r.Method != http.MethodDelete {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+	defer r.Body.Close()
+	var shortLinks []string
+	if err := json.NewDecoder(r.Body).Decode(&shortLinks); err != nil {
+		http.Error(w, "Не удалось распарсить тело запроса", http.StatusBadRequest)
 		return
 	}
 
-	var shortLinks []string
+	if len(shortLinks) == 0 {
+		http.Error(w, "Список ссылок не предоставлен", http.StatusBadRequest)
+		return
+	}
 
-	h.usersService.DeleteLinks(ctx, shortLinks)
+	err := h.usersService.DeleteLinks(ctx, shortLinks)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("content-type", constants.TextContentType)
 	w.WriteHeader(http.StatusAccepted)

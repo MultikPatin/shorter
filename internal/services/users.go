@@ -7,8 +7,11 @@ import (
 	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
+	"sync"
 	"time"
 )
+
+const batchSize = 5
 
 var ErrAddUser = errors.New("failed to insert user")
 var ErrNoLinksByUser = errors.New("links by userID %d not found")
@@ -55,10 +58,66 @@ func (s *UsersService) GetLinks(ctx context.Context, host string) ([]models.User
 	return links, nil
 }
 
-func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) {
+func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) error {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	s.usersRepository.DeleteLinks(ctx, shortLinks)
-	return
+	var batches [][]string
+	for i := 0; i < len(shortLinks); i += batchSize {
+		end := i + batchSize
+		if end > len(shortLinks) {
+			end = len(shortLinks)
+		}
+		batch := shortLinks[i:end]
+		batches = append(batches, batch)
+	}
+
+	batchChan := shortLinksGenerator(ctx, batches)
+	errChan := make(chan error, len(batches))
+
+	var wg sync.WaitGroup
+	for batch := range batchChan {
+		wg.Add(1)
+		data := batch
+		go func(batch []string) {
+			defer wg.Done()
+			err := s.usersRepository.DeleteLinks(ctx, batch)
+			if err != nil {
+				errChan <- fmt.Errorf("ошибка при обновлении батча ссылок: %w", err)
+			}
+		}(data)
+	}
+
+	go func() {
+		wg.Wait()
+		close(errChan)
+	}()
+
+	var errs []error
+	for err := range errChan {
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("при обновлении ссылок возникли следующие ошибки: %v", errs)
+	}
+
+	return nil
+}
+
+func shortLinksGenerator(ctx context.Context, batches [][]string) chan []string {
+	inputCh := make(chan []string, len(batches))
+
+	go func() {
+		defer close(inputCh)
+
+		for _, batch := range batches {
+			select {
+			case <-ctx.Done():
+				return
+			case inputCh <- batch:
+			}
+		}
+	}()
+	return inputCh
 }
