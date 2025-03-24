@@ -49,7 +49,7 @@ func (s *UsersService) GetLinks(ctx context.Context, host string) ([]models.User
 	}
 	for _, result := range results {
 		link := models.UserLinks{
-			Shorten:  getResponseLink(result.Shorten, shortPre, constants.UrlPrefix+host),
+			Shorten:  getResponseLink(result.Shorten, shortPre, constants.URLPrefix+host),
 			Original: result.Original,
 		}
 		links = append(links, link)

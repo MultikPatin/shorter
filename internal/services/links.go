@@ -45,12 +45,12 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 	id, err := s.linksRepository.Add(ctx, addedLink)
 	if err != nil {
 		if errors.Is(err, ErrConflict) {
-			return getResponseLink(id, shortPre, constants.UrlPrefix+host), err
+			return getResponseLink(id, shortPre, constants.URLPrefix+host), err
 		} else {
 			return "", fmt.Errorf("failed to add link: %w", err)
 		}
 	}
-	return getResponseLink(id, shortPre, constants.UrlPrefix+host), nil
+	return getResponseLink(id, shortPre, constants.URLPrefix+host), nil
 }
 
 func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error) {
@@ -88,7 +88,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 	for _, result := range results {
 		response := models.Result{
 			CorrelationID: result.CorrelationID,
-			Result:        getResponseLink(result.Result, shortPre, constants.UrlPrefix+host),
+			Result:        getResponseLink(result.Result, shortPre, constants.URLPrefix+host),
 		}
 		responseLinks = append(responseLinks, response)
 	}
