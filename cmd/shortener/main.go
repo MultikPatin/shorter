@@ -13,7 +13,11 @@ func main() {
 
 	c := config.Parse(logger)
 
-	shorterApp := app.NewApp(c)
+	shorterApp, err := app.NewApp(c)
+	if err != nil {
+		logger.Fatalw(err.Error(), "event", "start server")
+		return
+	}
 	defer shorterApp.Close()
 
 	logger.Infow(

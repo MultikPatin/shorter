@@ -61,8 +61,11 @@ func (s *Repository) Close() error {
 	return nil
 }
 
-func NewApp(c *config.Config) *App {
-	s := NewServices(c)
+func NewApp(c *config.Config) (*App, error) {
+	s, err := NewServices(c)
+	if err != nil {
+		return nil, err
+	}
 	h := NewHandlers(s)
 	r := NewRouters(h)
 
@@ -70,7 +73,7 @@ func NewApp(c *config.Config) *App {
 		Addr:     c.Addr,
 		Router:   r,
 		Services: s,
-	}
+	}, nil
 }
 
 func NewHandlers(s *Services) *Handlers {
@@ -81,10 +84,10 @@ func NewHandlers(s *Services) *Handlers {
 	}
 }
 
-func NewServices(c *config.Config) *Services {
+func NewServices(c *config.Config) (*Services, error) {
 	repository, err := NewRepository(c)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	if repository.users != nil {
 		middleware.UserService = services.NewUserService(repository.users)
@@ -96,7 +99,7 @@ func NewServices(c *config.Config) *Services {
 		health:     services.NewHealthService(repository.health),
 		users:      services.NewUserService(repository.users),
 		Repository: repository,
-	}
+	}, nil
 }
 
 func NewRepository(c *config.Config) (*Repository, error) {
