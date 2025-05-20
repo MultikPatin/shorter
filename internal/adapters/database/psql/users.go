@@ -25,7 +25,7 @@ func (r *UsersRepository) Login(ctx context.Context) (int64, error) {
 
 	err := r.db.Connection.QueryRowContext(ctx, addUser).Scan(&userID)
 	if err != nil {
-		return -1, fmt.Errorf("не удалось добавить пользователя: %w", err)
+		return -1, fmt.Errorf("couldn't add user: %w", err)
 	}
 	return userID, nil
 }
@@ -39,7 +39,7 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 
 	rows, err := r.db.Connection.QueryContext(ctx, getLinksByUser, userID)
 	if err != nil {
-		return nil, fmt.Errorf("не удалось полчить ссылки пользователя: %w", err)
+		return nil, fmt.Errorf("couldn't get the user's links: %w", err)
 	}
 	defer rows.Close()
 
@@ -65,7 +65,7 @@ func (r *UsersRepository) DeleteLinks(ctx context.Context, shortLinks []string) 
 
 	tx, err := r.db.Connection.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("не удалось начать транзакцию: %w", err)
+		return fmt.Errorf("couldn't start a transaction: %w", err)
 	}
 
 	for _, link := range shortLinks {
@@ -77,7 +77,7 @@ func (r *UsersRepository) DeleteLinks(ctx context.Context, shortLinks []string) 
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("не удалось подтвердить транзакцию: %w", err)
+		return fmt.Errorf("couldn't confirm the transaction: %w", err)
 	}
 
 	return nil

@@ -83,7 +83,7 @@ func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) err
 			defer wg.Done()
 			err := s.usersRepository.DeleteLinks(ctx, batch)
 			if err != nil {
-				errChan <- fmt.Errorf("ошибка при обновлении батча ссылок: %w", err)
+				errChan <- fmt.Errorf("error updating the link patch: %w", err)
 			}
 		}(data)
 	}
@@ -99,7 +99,7 @@ func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) err
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf("при обновлении ссылок возникли следующие ошибки: %v", errs)
+		return fmt.Errorf("the following errors occurred when updating the links: %v", errs)
 	}
 
 	return nil

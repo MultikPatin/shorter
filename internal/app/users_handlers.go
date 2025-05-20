@@ -64,12 +64,12 @@ func (h *UsersHandlers) DeleteLinks(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var shortLinks []string
 	if err := json.NewDecoder(r.Body).Decode(&shortLinks); err != nil {
-		http.Error(w, "Не удалось распарсить тело запроса", http.StatusBadRequest)
+		http.Error(w, "Couldn't parse the request body", http.StatusBadRequest)
 		return
 	}
 
 	if len(shortLinks) == 0 {
-		http.Error(w, "Список ссылок не предоставлен", http.StatusBadRequest)
+		http.Error(w, "The list of links is not provided", http.StatusBadRequest)
 		return
 	}
 

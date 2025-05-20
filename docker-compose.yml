@@ -5,7 +5,7 @@ services:
     container_name: postgres_db
     restart: always
     environment:
-      - POSTGRES_DB=test_db
+      - POSTGRES_DB=test
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_HOST=localhost
