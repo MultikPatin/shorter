@@ -53,6 +53,7 @@ func TestAddLinkInText(t *testing.T) {
 			},
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
@@ -122,6 +123,7 @@ func TestAddLink(t *testing.T) {
 			body: ``,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var buf bytes.Buffer
@@ -197,6 +199,7 @@ func TestAddLinks(t *testing.T) {
 			body: ``,
 		},
 	}
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var buf bytes.Buffer
@@ -256,6 +259,7 @@ func TestGetLink(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
