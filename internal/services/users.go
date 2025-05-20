@@ -62,16 +62,7 @@ func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) err
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	var batches [][]string
-	for i := 0; i < len(shortLinks); i += batchSize {
-		end := i + batchSize
-		if end > len(shortLinks) {
-			end = len(shortLinks)
-		}
-		batch := shortLinks[i:end]
-		batches = append(batches, batch)
-	}
-
+	batches := setBatches(shortLinks)
 	batchChan := shortLinksGenerator(ctx, batches)
 	errChan := make(chan error, len(batches))
 
@@ -103,6 +94,19 @@ func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) err
 	}
 
 	return nil
+}
+
+func setBatches(shortLinks []string) [][]string {
+	var batches [][]string
+	for i := 0; i < len(shortLinks); i += batchSize {
+		end := i + batchSize
+		if end > len(shortLinks) {
+			end = len(shortLinks)
+		}
+		batch := shortLinks[i:end]
+		batches = append(batches, batch)
+	}
+	return batches
 }
 
 func shortLinksGenerator(ctx context.Context, batches [][]string) chan []string {
