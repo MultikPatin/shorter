@@ -4,7 +4,6 @@ import (
 	"main/internal/adapters"
 	"main/internal/app"
 	"main/internal/config"
-	"main/internal/services"
 	"net/http"
 )
 
@@ -14,23 +13,19 @@ func main() {
 
 	c := config.Parse(logger)
 
-	linksRepository, err := adapters.NewLinksRepository(c, logger)
+	shorterApp, err := app.NewApp(c)
 	if err != nil {
-		panic(err)
+		logger.Fatalw(err.Error(), "event", "start server")
+		return
 	}
-
-	linksService := services.NewLinksService(c, linksRepository)
-	defer linksService.Close()
-
-	h := app.NewLinksHandlers(linksService)
-	r := app.NewRouters(h)
+	defer shorterApp.Close()
 
 	logger.Infow(
 		"Starting server",
 		"addr", c.Addr,
 	)
 
-	if err := http.ListenAndServe(c.Addr, r); err != nil {
+	if err := http.ListenAndServe(shorterApp.Addr, shorterApp.Router); err != nil {
 		logger.Fatalw(err.Error(), "event", "start server")
 	}
 }

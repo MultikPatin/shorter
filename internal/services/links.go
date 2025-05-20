@@ -6,42 +6,26 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"main/internal/config"
+	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
-	"net/url"
 	"time"
 )
 
-var ErrConflict = errors.New("data conflict")
-
-const (
-	urlPrefix = "http://"
-	delimiter = "/"
+var (
+	ErrConflict    = errors.New("data conflict")
+	ErrDeletedLink = errors.New("link is deleted")
 )
 
 type LinksService struct {
 	linksRepository interfaces.LinksRepository
-	shortPre        string
 }
 
 func NewLinksService(c *config.Config, linksRepository interfaces.LinksRepository) *LinksService {
+	shortPre = c.ShortLinkPrefix
 	return &LinksService{
 		linksRepository: linksRepository,
-		shortPre:        c.ShortLinkPrefix,
 	}
-}
-
-func (s *LinksService) Ping() error {
-	err := s.linksRepository.Ping()
-	return err
-}
-
-func (s *LinksService) Close() error {
-	err := s.linksRepository.Close()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, host string) (string, error) {
@@ -54,19 +38,19 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 	}
 
 	addedLink := models.AddedLink{
-		Short:  getKey(u, s.shortPre),
+		Short:  getKey(u, shortPre),
 		Origin: originLink.URL,
 	}
 
 	id, err := s.linksRepository.Add(ctx, addedLink)
 	if err != nil {
 		if errors.Is(err, ErrConflict) {
-			return getResponseLink(id, s.shortPre, urlPrefix+host), err
+			return getResponseLink(id, shortPre, constants.URLPrefix+host), err
 		} else {
 			return "", fmt.Errorf("failed to add link: %w", err)
 		}
 	}
-	return getResponseLink(id, s.shortPre, urlPrefix+host), nil
+	return getResponseLink(id, shortPre, constants.URLPrefix+host), nil
 }
 
 func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error) {
@@ -87,7 +71,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 		}
 		addedLink := models.AddedLink{
 			CorrelationID: originLinks[i].CorrelationID,
-			Short:         getKey(u, s.shortPre),
+			Short:         getKey(u, shortPre),
 			Origin:        originLinks[i].URL,
 		}
 		addedLinks = append(addedLinks, addedLink)
@@ -104,7 +88,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 	for _, result := range results {
 		response := models.Result{
 			CorrelationID: result.CorrelationID,
-			Result:        getResponseLink(result.Result, s.shortPre, urlPrefix+host),
+			Result:        getResponseLink(result.Result, shortPre, constants.URLPrefix+host),
 		}
 		responseLinks = append(responseLinks, response)
 	}
@@ -120,23 +104,4 @@ func (s *LinksService) Get(ctx context.Context, shortLink string) (string, error
 		return "", fmt.Errorf("origin link not found: %w", err)
 	}
 	return originLink, nil
-}
-
-func getKey(u uuid.UUID, p string) string {
-	if isURL(p) {
-		return u.String()
-	}
-	return p + u.String()
-}
-
-func getResponseLink(k string, p string, h string) string {
-	if isURL(p) {
-		return p + delimiter + k + delimiter
-	}
-	return h + delimiter + k + delimiter
-}
-
-func isURL(str string) bool {
-	u, err := url.Parse(str)
-	return err == nil && u.Scheme != "" && u.Host != ""
 }

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"github.com/google/uuid"
-	"main/internal/adapters"
 	"main/internal/config"
+	"main/internal/constants"
 	"main/internal/models"
 	"main/internal/services"
 	"net/http"
@@ -18,7 +18,6 @@ import (
 var c = &config.Config{
 	StorageFilePaths: "test.json",
 }
-var logger = adapters.GetLogger()
 
 func TestAddLinkInText(t *testing.T) {
 	type want struct {
@@ -36,7 +35,7 @@ func TestAddLinkInText(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusCreated,
 			},
 			req: req{
@@ -46,7 +45,7 @@ func TestAddLinkInText(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{
@@ -59,8 +58,8 @@ func TestAddLinkInText(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			h.AddLinkInText(w, request)
@@ -92,7 +91,7 @@ func TestAddLink(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: jsonContentType,
+				contentType: constants.JSONContentType,
 				statusCode:  http.StatusCreated,
 			},
 			req: req{
@@ -103,7 +102,7 @@ func TestAddLink(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{
@@ -114,7 +113,7 @@ func TestAddLink(t *testing.T) {
 		{
 			name: "wrong body",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusBadRequest,
 			},
 			req: req{
@@ -131,8 +130,8 @@ func TestAddLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			h.AddLink(w, request)
@@ -164,7 +163,7 @@ func TestAddLinks(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: jsonContentType,
+				contentType: constants.JSONContentType,
 				statusCode:  http.StatusCreated,
 			},
 			req: req{
@@ -178,7 +177,7 @@ func TestAddLinks(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{
@@ -189,7 +188,7 @@ func TestAddLinks(t *testing.T) {
 		{
 			name: "wrong body",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusBadRequest,
 			},
 			req: req{
@@ -206,8 +205,8 @@ func TestAddLinks(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten/batch", &buf)
 			w := httptest.NewRecorder()
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			h.AddLinks(w, request)
@@ -238,7 +237,7 @@ func TestGetLink(t *testing.T) {
 		{
 			name: "positive case",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusTemporaryRedirect,
 			},
 			req: req{
@@ -248,7 +247,7 @@ func TestGetLink(t *testing.T) {
 		{
 			name: "wrong method",
 			want: want{
-				contentType: textContentType,
+				contentType: constants.TextContentType,
 				statusCode:  http.StatusMethodNotAllowed,
 			},
 			req: req{
@@ -266,8 +265,8 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			d, _ := adapters.NewLinksRepository(c, logger)
-			l := services.NewLinksService(c, d)
+			r, _ := NewRepository(c)
+			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
 			addedLink := models.AddedLink{
@@ -275,7 +274,7 @@ func TestGetLink(t *testing.T) {
 				Origin: "test.com",
 			}
 
-			id, err := d.Add(ctx, addedLink)
+			id, err := r.links.Add(ctx, addedLink)
 			if err != nil {
 				t.Fatalf("Failed to add link")
 				return

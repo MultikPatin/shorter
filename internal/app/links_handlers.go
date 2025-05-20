@@ -5,15 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
 	"main/internal/services"
 	"net/http"
-)
-
-const (
-	textContentType = "text/plain; charset=utf-8"
-	jsonContentType = "application/json"
 )
 
 func NewLinksHandlers(s interfaces.LinksService) *LinksHandlers {
@@ -36,11 +32,15 @@ func (h *LinksHandlers) GetLink(w http.ResponseWriter, r *http.Request) {
 
 	originLink, err := h.linksService.Get(ctx, r.PathValue("id"))
 	if err != nil {
-		http.Error(w, "Origin not found", http.StatusNotFound)
+		if errors.Is(err, services.ErrDeletedLink) {
+			http.Error(w, "Origin is deleted", http.StatusGone)
+		} else {
+			http.Error(w, "Origin not found", http.StatusNotFound)
+		}
 		return
 	}
 
-	w.Header().Set("content-type", textContentType)
+	w.Header().Set("content-type", constants.TextContentType)
 	w.Header().Set("Location", originLink)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
@@ -91,7 +91,7 @@ func (h *LinksHandlers) AddLinks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", jsonContentType)
+	w.Header().Set("content-type", constants.JSONContentType)
 	w.WriteHeader(http.StatusCreated)
 	w.Write(resp)
 }
@@ -140,7 +140,7 @@ func (h *LinksHandlers) AddLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", jsonContentType)
+	w.Header().Set("content-type", constants.JSONContentType)
 	w.WriteHeader(status)
 	w.Write(resp)
 }
@@ -174,23 +174,7 @@ func (h *LinksHandlers) AddLinkInText(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("content-type", textContentType)
+	w.Header().Set("content-type", constants.TextContentType)
 	w.WriteHeader(status)
 	w.Write([]byte(response))
-}
-
-func (h *LinksHandlers) Ping(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := h.linksService.Ping()
-	if err != nil {
-		http.Error(w, "Database not available", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("content-type", textContentType)
-	w.WriteHeader(http.StatusOK)
 }
