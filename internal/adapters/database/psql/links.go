@@ -55,15 +55,15 @@ func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.Adde
 
 	var results []models.Result
 
-	for _, link := range addedLinks {
-		_, err := r.db.Connection.ExecContext(ctx, addShortLink, link.Short, link.Origin, userID)
+	for i := 0; i < len(addedLinks); {
+		_, err := r.db.Connection.ExecContext(ctx, addShortLink, addedLinks[i].Short, addedLinks[i].Origin, userID)
 		if err != nil {
 			tx.Rollback()
 			return nil, err
 		}
 		result := models.Result{
-			CorrelationID: link.CorrelationID,
-			Result:        link.Short,
+			CorrelationID: addedLinks[i].CorrelationID,
+			Result:        addedLinks[i].Short,
 		}
 		results = append(results, result)
 	}

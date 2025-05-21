@@ -18,11 +18,11 @@ jobs:
 
   shortenertest:
     runs-on: ubuntu-latest
-    container: golang:1.24
+    container: golang:1.22
     needs: branchtest
 
-    env:
-      DATABASE_CONN_STRING: "postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable"
+
+
 
     services:
       postgres:
@@ -54,11 +54,11 @@ jobs:
           chmod -R +x $GITHUB_WORKSPACE/.tools
           mv $GITHUB_WORKSPACE/.tools/shortenertestbeta /usr/local/bin/shortenertestbeta
           mv $GITHUB_WORKSPACE/.tools/random /usr/local/bin/random
-          mv $GITHUB_WORKSPACE/.tools/wipedb /usr/local/bin/wipedb
+
 
       - name: Setup go deps
         run: |
-          go install golang.org/x/tools/cmd/goimports@latest
+          go install golang.org/x/tools/cmd/goimports@v0.30.0
 
       - name: Build server binary
         run: |
@@ -336,8 +336,8 @@ jobs:
           shortenertestbeta -test.v -test.run=^TestIteration10$ \
               -binary-path=cmd/shortener/shortener \
               -source-path=. \
-              -database-dsn=$DATABASE_CONN_STRING
-          wipedb $DATABASE_CONN_STRING
+              -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
 
       - name: "Code increment #11"
         if: |
@@ -359,8 +359,8 @@ jobs:
         run: |
           shortenertestbeta -test.v -test.run=^TestIteration11$ \
               -binary-path=cmd/shortener/shortener \
-              -database-dsn=$DATABASE_CONN_STRING
-          wipedb $DATABASE_CONN_STRING
+              -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
 
       - name: "Code increment #12"
         if: |
@@ -381,8 +381,8 @@ jobs:
         run: |
           shortenertestbeta -test.v -test.run=^TestIteration12$ \
               -binary-path=cmd/shortener/shortener \
-              -database-dsn=$DATABASE_CONN_STRING
-          wipedb $DATABASE_CONN_STRING
+              -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
 
       - name: "Code increment #13"
         if: |
@@ -402,8 +402,8 @@ jobs:
         run: |
           shortenertestbeta -test.v -test.run=^TestIteration13$ \
               -binary-path=cmd/shortener/shortener \
-              -database-dsn=$DATABASE_CONN_STRING
-          wipedb $DATABASE_CONN_STRING
+              -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
 
       - name: "Code increment #14"
         if: |
@@ -422,8 +422,8 @@ jobs:
         run: |
           shortenertestbeta -test.v -test.run=^TestIteration14$ \
               -binary-path=cmd/shortener/shortener \
-              -database-dsn=$DATABASE_CONN_STRING
-          wipedb $DATABASE_CONN_STRING
+              -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
 
       - name: "Code increment #15"
         if: |
@@ -441,8 +441,8 @@ jobs:
         run: |
           shortenertestbeta -test.v -test.run=^TestIteration15$ \
               -binary-path=cmd/shortener/shortener \
-              -database-dsn=$DATABASE_CONN_STRING
-          wipedb $DATABASE_CONN_STRING
+              -database-dsn='postgres://postgres:postgres@postgres:5432/praktikum?sslmode=disable'
+
 
       - name: "Code increment #16"
         if: |

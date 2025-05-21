@@ -85,13 +85,14 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 
 	var responseLinks []models.Result
 
-	for _, result := range results {
+	for i := 0; i < len(results); {
 		response := models.Result{
-			CorrelationID: result.CorrelationID,
-			Result:        getResponseLink(result.Result, shortPre, constants.URLPrefix+host),
+			CorrelationID: results[i].CorrelationID,
+			Result:        getResponseLink(results[i].Result, shortPre, constants.URLPrefix+host),
 		}
 		responseLinks = append(responseLinks, response)
 	}
+
 	return responseLinks, nil
 }
 
