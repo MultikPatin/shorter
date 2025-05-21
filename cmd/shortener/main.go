@@ -5,6 +5,7 @@ import (
 	"main/internal/app"
 	"main/internal/config"
 	"net/http"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -24,6 +25,13 @@ func main() {
 		"Starting server",
 		"addr", c.Addr,
 	)
+
+	go func() {
+		err := http.ListenAndServe(c.PPofAddr, nil)
+		if err != nil {
+			logger.Errorf("error starting PProf listener: %s", err)
+		}
+	}()
 
 	if err := http.ListenAndServe(shorterApp.Addr, shorterApp.Router); err != nil {
 		logger.Fatalw(err.Error(), "event", "start server")

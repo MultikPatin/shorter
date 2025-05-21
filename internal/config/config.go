@@ -16,6 +16,7 @@ const (
 )
 
 type Config struct {
+	PPofAddr         string
 	Addr             string
 	ShortLinkPrefix  string
 	StorageFilePaths string
@@ -81,6 +82,7 @@ func Parse(logger *zap.SugaredLogger) *Config {
 	} else if cmdCfg.PostgresDNS != "" {
 		cfg.PostgresDNS, _ = parseDSN(cmdCfg.PostgresDNS)
 	}
+	cfg.PPofAddr = "localhost:6060"
 
 	return cfg
 }
