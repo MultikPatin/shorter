@@ -30,4 +30,4 @@ networks:
   services:
 
 
-#postgresql://postgres:postgres@localhost:5432/test_db
+#postgresql://postgres:postgres@localhost:5432/test

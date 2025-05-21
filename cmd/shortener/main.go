@@ -28,9 +28,9 @@ func main() {
 
 	go func() {
 		logger.Infof("PProf endpoints available at /debug/pprof/*")
-		err := http.ListenAndServe(":6060", nil)
+		err := http.ListenAndServe(c.PPofAddr, nil)
 		if err != nil {
-			logger.Errorf("error starting PProf listener:", err)
+			logger.Errorf("error starting PProf listener: %s", err)
 		}
 	}()
 
