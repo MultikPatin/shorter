@@ -12,15 +12,18 @@ import (
 	"time"
 )
 
+// Custom error types for handling link conflicts and deleted links.
 var (
 	ErrConflict    = errors.New("data conflict")
 	ErrDeletedLink = errors.New("link is deleted")
 )
 
+// LinksService encapsulates the business logic for link management.
 type LinksService struct {
-	linksRepository interfaces.LinksRepository
+	linksRepository interfaces.LinksRepository // Dependency for accessing link-related repository methods.
 }
 
+// NewLinksService constructs a new LinksService instance wired to a specific links repository.
 func NewLinksService(c *config.Config, linksRepository interfaces.LinksRepository) *LinksService {
 	shortPre = c.ShortLinkPrefix
 	return &LinksService{
@@ -28,6 +31,7 @@ func NewLinksService(c *config.Config, linksRepository interfaces.LinksRepositor
 	}
 }
 
+// Add creates a new link record, assigning a unique short identifier.
 func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, host string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -53,6 +57,7 @@ func (s *LinksService) Add(ctx context.Context, originLink models.OriginLink, ho
 	return getResponseLink(id, shortPre, constants.URLPrefix+host), nil
 }
 
+// AddBatch allows batch-adding multiple links simultaneously.
 func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.OriginLink, host string) ([]models.Result, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -95,6 +100,7 @@ func (s *LinksService) AddBatch(ctx context.Context, originLinks []models.Origin
 	return responseLinks, nil
 }
 
+// Get resolves a short link to its original URL.
 func (s *LinksService) Get(ctx context.Context, shortLink string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()

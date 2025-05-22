@@ -12,7 +12,8 @@ import (
 	"time"
 )
 
-var UserService interfaces.UsersService // Global reference to the users service for authentication.
+// UserService users service for authentication.
+var UserService interfaces.UsersService
 
 // Authentication wraps the next handler with JWT-based authentication.
 func Authentication(next http.Handler) http.Handler {

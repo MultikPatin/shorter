@@ -1,4 +1,4 @@
-package services
+package services // Package services implements business logic for user-related operations.
 
 import (
 	"context"
@@ -11,21 +11,28 @@ import (
 	"time"
 )
 
+// Constants for batch-processing of link deletions.
 const batchSize = 5
 
-var ErrAddUser = errors.New("failed to insert user")
-var ErrNoLinksByUser = errors.New("links by userID %d not found")
+// Custom error types for user-related failures.
+var (
+	ErrAddUser       = errors.New("failed to insert user")
+	ErrNoLinksByUser = errors.New("links by userID %d not found")
+)
 
+// UsersService encapsulates the business logic for user management.
 type UsersService struct {
-	usersRepository interfaces.UsersRepository
+	usersRepository interfaces.UsersRepository // Dependency for accessing user-related repository methods.
 }
 
+// NewUserService constructs a new UsersService instance bound to a specific users repository.
 func NewUserService(usersRepository interfaces.UsersRepository) *UsersService {
 	return &UsersService{
 		usersRepository: usersRepository,
 	}
 }
 
+// Login initiates a new user session and returns a unique user identifier.
 func (s *UsersService) Login() (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -37,6 +44,7 @@ func (s *UsersService) Login() (int64, error) {
 	return userID, nil
 }
 
+// GetLinks retrieves all links created by the current user.
 func (s *UsersService) GetLinks(ctx context.Context, host string) ([]models.UserLinks, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -58,6 +66,7 @@ func (s *UsersService) GetLinks(ctx context.Context, host string) ([]models.User
 	return links, nil
 }
 
+// DeleteLinks deletes a collection of short links in parallelized batches.
 func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) error {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -96,6 +105,7 @@ func (s *UsersService) DeleteLinks(ctx context.Context, shortLinks []string) err
 	return nil
 }
 
+// setBatches splits a large collection of links into smaller chunks for batch processing.
 func setBatches(shortLinks []string) [][]string {
 	var batches [][]string
 	for i := 0; i < len(shortLinks); i += batchSize {
@@ -109,6 +119,7 @@ func setBatches(shortLinks []string) [][]string {
 	return batches
 }
 
+// shortLinksGenerator feeds batches of links into a channel for consumption by worker goroutines.
 func shortLinksGenerator(ctx context.Context, batches [][]string) chan []string {
 	inputCh := make(chan []string, len(batches))
 
