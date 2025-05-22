@@ -7,20 +7,24 @@ import (
 	"strings"
 )
 
+// Available content types that support gzip encoding.
 var availableContentTypes = map[string]bool{
 	"json": true,
 	"html": true,
 }
 
+// gzipWriter adapts ResponseWriter to work with compressed output streams.
 type gzipWriter struct {
-	http.ResponseWriter
-	Writer io.Writer
+	http.ResponseWriter           // Wraps the original response writer.
+	Writer              io.Writer // Compressed stream writer.
 }
 
+// Write overrides the Write method to delegate to the wrapped writer.
 func (w gzipWriter) Write(b []byte) (int, error) {
 	return w.Writer.Write(b)
 }
 
+// GZipper compresses outgoing HTTP responses if the client accepts gzip encoding.
 func GZipper(h http.Handler) http.Handler {
 	zipFn := func(w http.ResponseWriter, r *http.Request) {
 		acceptEncoding := r.Header.Get("Accept-Encoding")
