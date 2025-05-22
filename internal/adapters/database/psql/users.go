@@ -10,16 +10,19 @@ import (
 	"time"
 )
 
+// UsersRepository manages user login, link retrieval, and deletion operations in a PostgreSQL database.
 type UsersRepository struct {
-	db *PostgresDB
+	db *PostgresDB // Reference to the PostgreSQL database handler.
 }
 
+// NewUsersRepository constructs a new UsersRepository instance linked to a specific PostgresDB.
 func NewUsersRepository(db *PostgresDB) *UsersRepository {
 	return &UsersRepository{
 		db: db,
 	}
 }
 
+// Login registers a new user session and retrieves their assigned user ID.
 func (r *UsersRepository) Login(ctx context.Context) (int64, error) {
 	var userID int64
 
@@ -30,6 +33,7 @@ func (r *UsersRepository) Login(ctx context.Context) (int64, error) {
 	return userID, nil
 }
 
+// GetLinks fetches all links created by a specific user.
 func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -60,6 +64,7 @@ func (r *UsersRepository) GetLinks(ctx context.Context) ([]models.UserLinks, err
 	return links, nil
 }
 
+// DeleteLinks removes a list of short links belonging to a specific user.
 func (r *UsersRepository) DeleteLinks(ctx context.Context, shortLinks []string) error {
 	userID := ctx.Value(constants.UserIDKey).(int64)
 

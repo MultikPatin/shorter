@@ -12,15 +12,16 @@ import (
 )
 
 const (
-	defaultStorageFilePath = "shorter"
+	defaultStorageFilePath = "shorter" // Default path for storage file if no custom path is provided.
 )
 
+// Config stores all the necessary configurations from both environment variables and command line inputs.
 type Config struct {
-	PPofAddr         string
-	Addr             string
-	ShortLinkPrefix  string
-	StorageFilePaths string
-	PostgresDNS      *url.URL
+	PProfAddr        string   // Address for pprof profiling endpoint.
+	Addr             string   // Server listening address.
+	ShortLinkPrefix  string   // Base URL for short links.
+	StorageFilePaths string   // Path where storage files are located.
+	PostgresDNS      *url.URL // Database connection details (Data Source Name).
 }
 
 type envConfig struct {
@@ -29,6 +30,7 @@ type envConfig struct {
 	ShortLinkPrefix  string `env:"BASE_URL"`
 	PostgresDNS      string `env:"DATABASE_DSN"`
 }
+
 type cmdConfig struct {
 	Addr             string
 	StorageFilePaths string
@@ -36,27 +38,23 @@ type cmdConfig struct {
 	PostgresDNS      string
 }
 
-type ServHost struct {
+type servHost struct {
 	Host string
 	Port int
 }
 
+// Parse merges environment variables and command-line options into a single configuration object.
 func Parse(logger *zap.SugaredLogger) *Config {
 	cfg := &Config{}
 
 	envCfg, err := parseEnv()
 	if err != nil {
-		logger.Infow(
-			"Parsed Env",
-			"error", err.Error(),
-		)
+		logger.Infow("Error while parsing environment variables", "error", err.Error())
 	}
+
 	cmdCfg, err := parseCmd()
 	if err != nil {
-		logger.Infow(
-			"Parsed CMD",
-			"error", err.Error(),
-		)
+		logger.Infow("Error while parsing command-line arguments", "error", err.Error())
 	}
 
 	if envCfg.Addr == "" {
@@ -82,7 +80,7 @@ func Parse(logger *zap.SugaredLogger) *Config {
 	} else if cmdCfg.PostgresDNS != "" {
 		cfg.PostgresDNS, _ = parseDSN(cmdCfg.PostgresDNS)
 	}
-	cfg.PPofAddr = "localhost:6060"
+	cfg.PProfAddr = "localhost:6060"
 
 	return cfg
 }
@@ -99,40 +97,40 @@ func parseEnv() (*envConfig, error) {
 func parseCmd() (*cmdConfig, error) {
 	cfg := &cmdConfig{}
 
-	sh := new(ServHost)
-	_ = flag.Value(sh)
+	hostPort := new(servHost)
+	_ = flag.Value(hostPort)
 
 	flag.StringVar(&cfg.PostgresDNS, "d", "", "Postgres DSN")
-	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "short link server")
+	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "Short link server")
 	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
-	flag.Var(sh, "a", "Net address host:port")
+	flag.Var(hostPort, "a", "Network address host:port")
 	flag.Parse()
 
-	cfg.Addr = sh.String()
+	cfg.Addr = hostPort.String()
 	return cfg, nil
 }
 
-func (a *ServHost) String() string {
+func (a *servHost) String() string {
 	a.normalize()
 	return a.Host + ":" + strconv.Itoa(a.Port)
 }
 
-func (a *ServHost) Set(s string) error {
-	hp := strings.Split(s, ":")
-	if len(hp) != 2 {
-		return errors.New("need address in a form host:port")
+func (a *servHost) Set(s string) error {
+	parts := strings.Split(s, ":")
+	if len(parts) != 2 {
+		return errors.New("address must be in format host:port")
 	}
-	port, err := strconv.Atoi(hp[1])
+	port, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return err
 	}
-	a.Host = hp[0]
+	a.Host = parts[0]
 	a.Port = port
 	a.normalize()
 	return nil
 }
 
-func (a *ServHost) normalize() {
+func (a *servHost) normalize() {
 	if a.Port == 0 {
 		a.Port = 8080
 	}
@@ -142,10 +140,9 @@ func (a *ServHost) normalize() {
 }
 
 func parseDSN(dsn string) (*url.URL, error) {
-	parsedURL, err := url.Parse(dsn)
+	u, err := url.Parse(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse DSN: %w", err)
 	}
-
-	return parsedURL, nil
+	return u, nil
 }

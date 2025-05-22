@@ -6,16 +6,19 @@ import (
 	"main/internal/models"
 )
 
+// LinksRepository manages operations related to adding and retrieving links from the in-memory database.
 type LinksRepository struct {
-	db *InMemoryDB
+	db *InMemoryDB // Pointer to the in-memory database instance.
 }
 
+// NewLinksRepository creates a new instance of LinksRepository bound to a specific InMemoryDB.
 func NewLinksRepository(db *InMemoryDB) *LinksRepository {
 	return &LinksRepository{
 		db: db,
 	}
 }
 
+// Add inserts a new link into the database and persists the change to file storage.
 func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
 	select {
 	case <-ctx.Done():
@@ -36,12 +39,13 @@ func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (
 	}
 }
 
+// AddBatch adds multiple links in batch fashion, persisting changes to file storage.
 func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		var shortLinks []models.Result
+		var results []models.Result
 
 		for _, addedLink := range addedLinks {
 			r.db.links[addedLink.Short] = addedLink.Origin
@@ -54,16 +58,17 @@ func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.Adde
 			if err := r.db.producerFS.WriteEvent(event); err != nil {
 				return nil, err
 			}
-			shortLink := models.Result{
+			result := models.Result{
 				CorrelationID: addedLink.CorrelationID,
 				Result:        addedLink.Short,
 			}
-			shortLinks = append(shortLinks, shortLink)
+			results = append(results, result)
 		}
-		return shortLinks, nil
+		return results, nil
 	}
 }
 
+// Get retrieves the original URL corresponding to a given shortened link.
 func (r *LinksRepository) Get(ctx context.Context, short string) (string, error) {
 	select {
 	case <-ctx.Done():
@@ -72,6 +77,6 @@ func (r *LinksRepository) Get(ctx context.Context, short string) (string, error)
 		if link, ok := r.db.links[short]; ok {
 			return link, nil
 		}
-		return "", fmt.Errorf("user with short %s not found", short)
+		return "", fmt.Errorf("link with short code '%s' not found", short)
 	}
 }
