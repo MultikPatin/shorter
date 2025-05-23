@@ -1,4 +1,4 @@
-package app
+package app // Package app implements HTTP handlers for user-related operations.
 
 import (
 	"encoding/json"
@@ -10,16 +10,25 @@ import (
 	"net/http"
 )
 
+// NewUsersHandlers constructs a new UsersHandlers instance injected with a UsersService.
 func NewUsersHandlers(s interfaces.UsersService) *UsersHandlers {
 	return &UsersHandlers{
 		usersService: s,
 	}
 }
 
+// UsersHandlers encapsulates handlers for user-specific operations like fetching and deleting links.
 type UsersHandlers struct {
-	usersService interfaces.UsersService
+	usersService interfaces.UsersService // Dependency injection of the users service.
 }
 
+// GetLinks handles GET requests for retrieving links associated with the currently-authenticated user.
+//
+// Possible HTTP statuses:
+//   - 200 OK: Successfully fetched the user's links.
+//   - 204 No Content: The user has no links.
+//   - 405 Method Not Allowed: Request method is not allowed (only GET supported).
+//   - 500 Internal Server Error: An internal error occurred during link retrieval.
 func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -58,10 +67,17 @@ func (h *UsersHandlers) GetLinks(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
+// DeleteLinks processes DELETE requests for removing user-owned links.
+//
+// Possible HTTP statuses:
+//   - 202 Accepted: Deletion initiated successfully.
+//   - 400 Bad Request: Invalid or missing request body.
+//   - 500 Internal Server Error: An internal error occurred during link deletion.
 func (h *UsersHandlers) DeleteLinks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	defer r.Body.Close()
+
 	var shortLinks []string
 	if err := json.NewDecoder(r.Body).Decode(&shortLinks); err != nil {
 		http.Error(w, "Couldn't parse the request body", http.StatusBadRequest)

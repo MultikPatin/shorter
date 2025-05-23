@@ -11,12 +11,14 @@ import (
 	"main/internal/services"
 )
 
+// App encapsulates the core application state and dependencies.
 type App struct {
-	Addr     string
-	Router   *chi.Mux
-	Services *Services
+	Addr     string    // Binding address for the HTTP server.
+	Router   *chi.Mux  // Main router for handling HTTP requests.
+	Services *Services // Aggregation of application services.
 }
 
+// Close gracefully cleans up running services and dependencies.
 func (a *App) Close() error {
 	err := a.Services.Close()
 	if err != nil {
@@ -25,19 +27,22 @@ func (a *App) Close() error {
 	return nil
 }
 
+// Handlers organizes HTTP handlers into a coherent structure.
 type Handlers struct {
-	links  interfaces.LinkHandlers
-	health interfaces.HealthHandlers
-	users  interfaces.UsersHandlers
+	links  interfaces.LinkHandlers   // Handler for link-related operations.
+	health interfaces.HealthHandlers // Handler for health check endpoints.
+	users  interfaces.UsersHandlers  // Handler for user-specific operations.
 }
 
+// Services orchestrates service-level behavior and lifecycle management.
 type Services struct {
-	links      interfaces.LinksService
-	health     interfaces.HealthService
-	users      interfaces.UsersService
-	Repository *Repository
+	links      interfaces.LinksService  // Service for link-related operations.
+	health     interfaces.HealthService // Service for health-related operations.
+	users      interfaces.UsersService  // Service for user-specific operations.
+	Repository *Repository              // Encapsulation of repository access.
 }
 
+// Close shuts down the services and propagates cleanup.
 func (s *Services) Close() error {
 	err := s.Repository.Close()
 	if err != nil {
@@ -46,13 +51,15 @@ func (s *Services) Close() error {
 	return nil
 }
 
+// Repository abstracts the interaction with the underlying data store.
 type Repository struct {
-	links    interfaces.LinksRepository
-	users    interfaces.UsersRepository
-	health   interfaces.HealthRepository
-	Database interfaces.DB
+	links    interfaces.LinksRepository  // Repository for link operations.
+	users    interfaces.UsersRepository  // Repository for user operations.
+	health   interfaces.HealthRepository // Repository for health checks.
+	Database interfaces.DB               // Low-level database connection.
 }
 
+// Close terminates the underlying database connection.
 func (s *Repository) Close() error {
 	err := s.Database.Close()
 	if err != nil {
@@ -61,6 +68,7 @@ func (s *Repository) Close() error {
 	return nil
 }
 
+// NewApp constructs a fully-configured application instance.
 func NewApp(c *config.Config) (*App, error) {
 	s, err := NewServices(c)
 	if err != nil {
@@ -69,13 +77,15 @@ func NewApp(c *config.Config) (*App, error) {
 	h := NewHandlers(s)
 	r := NewRouters(h)
 
-	return &App{
+	app := &App{
 		Addr:     c.Addr,
 		Router:   r,
 		Services: s,
-	}, nil
+	}
+	return app, nil
 }
 
+// NewHandlers builds a set of HTTP handlers from the provided services.
 func NewHandlers(s *Services) *Handlers {
 	return &Handlers{
 		links:  NewLinksHandlers(s.links),
@@ -84,6 +94,7 @@ func NewHandlers(s *Services) *Handlers {
 	}
 }
 
+// NewServices configures the application's service layer based on the configuration.
 func NewServices(c *config.Config) (*Services, error) {
 	repository, err := NewRepository(c)
 	if err != nil {
@@ -102,6 +113,7 @@ func NewServices(c *config.Config) (*Services, error) {
 	}, nil
 }
 
+// NewRepository selects and initializes the appropriate repository based on configuration.
 func NewRepository(c *config.Config) (*Repository, error) {
 	var repository *Repository
 
@@ -125,6 +137,7 @@ func NewRepository(c *config.Config) (*Repository, error) {
 	return repository, nil
 }
 
+// NewInMemoryRepository constructs a repository using an in-memory database.
 func NewInMemoryRepository(db *memory.InMemoryDB) *Repository {
 	return &Repository{
 		links:    memory.NewLinksRepository(db),
@@ -134,6 +147,7 @@ func NewInMemoryRepository(db *memory.InMemoryDB) *Repository {
 	}
 }
 
+// NewPostgresRepository constructs a repository using a PostgreSQL database.
 func NewPostgresRepository(db *psql.PostgresDB) *Repository {
 	return &Repository{
 		links:    psql.NewLinksRepository(db),

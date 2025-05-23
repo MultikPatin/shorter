@@ -9,10 +9,12 @@ import (
 	"time"
 )
 
+// PostgresDB encapsulates a SQL database connection for interacting with a PostgreSQL backend.
 type PostgresDB struct {
-	Connection *sql.DB
+	Connection *sql.DB // The active database connection.
 }
 
+// Close terminates the database connection cleanly.
 func (p *PostgresDB) Close() error {
 	err := p.Connection.Close()
 	if err != nil {
@@ -21,11 +23,13 @@ func (p *PostgresDB) Close() error {
 	return nil
 }
 
+// Ping verifies connectivity to the database by issuing a ping request.
 func (p *PostgresDB) Ping() error {
 	err := p.Connection.Ping()
 	return err
 }
 
+// NewPostgresDB establishes a new PostgreSQL database connection using provided credentials.
 func NewPostgresDB(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*PostgresDB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -41,25 +45,23 @@ func NewPostgresDB(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*PostgresDB
 
 	conn, err := sql.Open("pgx", ps)
 	if err != nil {
-		logger.Infow(
-			"Create Postgres Connection",
-			"error", err.Error(),
-		)
+		logger.Infow("Error creating PostgreSQL connection", "error", err.Error())
+		return nil, err
 	}
 
 	err = migrate(ctx, conn)
 	if err != nil {
-		logger.Infow(
-			"Create tables",
-			"error", err.Error(),
-		)
+		logger.Infow("Error during table creation", "error", err.Error())
+		return nil, err
 	}
+
 	postgresDB := PostgresDB{
 		Connection: conn,
 	}
-	return &postgresDB, err
+	return &postgresDB, nil
 }
 
+// migrate applies database schema migrations using the provided context and connection.
 func migrate(ctx context.Context, conn *sql.DB) error {
 	_, err := conn.ExecContext(ctx, createTables)
 	if err != nil {
