@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/models"
@@ -177,22 +178,23 @@ func (h *LinksHandlers) AddLink(w http.ResponseWriter, r *http.Request) {
 //   - 500 Internal Server Error: An internal error occurred during link creation.
 func (h *LinksHandlers) AddLinkInText(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	log.Print("body")
 
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		return
 	}
-
+	log.Print("BODY | ", r.Body)
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
-
+	log.Print("body | ", body)
 	originLink := models.OriginLink{
 		URL: string(body),
 	}
-
+	log.Print("originLink | ", originLink)
 	status := http.StatusCreated
 
 	response, err := h.linksService.Add(ctx, originLink, r.Host)

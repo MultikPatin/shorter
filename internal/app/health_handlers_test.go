@@ -43,7 +43,8 @@ func ExampleHealthHandlers_Ping() {
 
 	// Output:
 	// Response Status: 200
-	// Content Type: text/plain
+	// Content Type: text/plain; charset=utf-8
+
 }
 
 func TestPing(t *testing.T) {
