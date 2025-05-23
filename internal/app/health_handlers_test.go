@@ -1,7 +1,10 @@
 package app
 
 import (
+	"fmt"
+	"github.com/golang/mock/gomock"
 	"main/internal/constants"
+	"main/internal/mocks"
 	"main/internal/services"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +12,39 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+// ExampleHealthHandlers_Ping shows how to use the Ping method from HealthHandlers.
+func ExampleHealthHandlers_Ping() {
+	// Setup controller and mock objects.
+	ctrl := gomock.NewController(&testing.T{})
+	defer ctrl.Finish()
+
+	// Create a mock HealthService.
+	mockHealthService := mocks.NewMockHealthService(ctrl)
+
+	// Define expectation: expect one call to Ping returning no error.
+	mockHealthService.EXPECT().Ping().Return(nil)
+
+	// Create a new HealthHandlers instance using the mock service.
+	handlers := NewHealthHandlers(mockHealthService)
+
+	// Create a simple HTTP request.
+	req, _ := http.NewRequest(http.MethodGet, "/ping", nil)
+
+	// Record the response using httptest.
+	recorder := httptest.NewRecorder()
+
+	// Execute the Ping method.
+	handlers.Ping(recorder, req)
+
+	// Access the response details properly via Header().
+	fmt.Printf("Response Status: %v\n", recorder.Code)
+	fmt.Printf("Content Type: %v\n", recorder.Header().Get("Content-Type"))
+
+	// Output:
+	// Response Status: 200
+	// Content Type: text/plain
+}
 
 func TestPing(t *testing.T) {
 	type want struct {
