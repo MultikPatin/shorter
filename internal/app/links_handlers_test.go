@@ -3,9 +3,11 @@ package app
 import (
 	"bytes"
 	"context"
+	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"main/internal/config"
 	"main/internal/constants"
+	"main/internal/mocks"
 	"main/internal/models"
 	"main/internal/services"
 	"net/http"
@@ -14,6 +16,139 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+// ExampleLinksHandlers_AddLink demonstrates how to use the AddLink method to add a single link.
+func ExampleLinksHandlers_AddLink() {
+	ctrl := gomock.NewController(&testing.T{})
+	defer ctrl.Finish()
+
+	// Create a mock LinksService.
+	mockLinksService := mocks.NewMockLinksService(ctrl)
+
+	// Define expectation: expect one call to Add with specific parameters.
+	linkToCreate := models.OriginLink{
+		URL: "https://example.com",
+	}
+	resultURL := "http://localhost/test-short-url"
+	mockLinksService.EXPECT().Add(gomock.Any(), linkToCreate, "localhost").Return(resultURL, nil)
+
+	// Create a new LinksHandlers instance using the mock service.
+	handlers := NewLinksHandlers(mockLinksService)
+
+	// Create a simple HTTP request.
+	reqBody := `{"url": "https://example.com"}`
+	request, _ := http.NewRequest(http.MethodPost, "/api/shorten", bytes.NewBufferString(reqBody))
+
+	// Record the response using httptest.
+	recorder := httptest.NewRecorder()
+
+	// Execute the AddLink method.
+	handlers.AddLink(recorder, request)
+
+	// Output:
+	// Response Status: 201 Created
+	// Content Type: application/json
+	// {"result":"http://localhost/test-short-url"}
+}
+
+// ExampleLinksHandlers_AddLinks demonstrates how to use the AddLinks method to add multiple links at once.
+func ExampleLinksHandlers_AddLinks() {
+	ctrl := gomock.NewController(&testing.T{})
+	defer ctrl.Finish()
+
+	// Create a mock LinksService.
+	mockLinksService := mocks.NewMockLinksService(ctrl)
+
+	// Define expectation: expect one call to AddBatch with specific parameters.
+	batchInput := []models.OriginLink{
+		{URL: "https://example1.com"},
+		{URL: "https://example2.com"},
+	}
+	batchResult := []string{"http://localhost/link1", "http://localhost/link2"}
+	mockLinksService.EXPECT().AddBatch(gomock.Any(), batchInput, "localhost").Return(batchResult, nil)
+
+	// Create a new LinksHandlers instance using the mock service.
+	handlers := NewLinksHandlers(mockLinksService)
+
+	// Create a simple HTTP request.
+	reqBody := `[{"url": "https://example1.com"}, {"url": "https://example2.com"}]`
+	request, _ := http.NewRequest(http.MethodPost, "/api/shorten/batch", bytes.NewBufferString(reqBody))
+
+	// Record the response using httptest.
+	recorder := httptest.NewRecorder()
+
+	// Execute the AddLinks method.
+	handlers.AddLinks(recorder, request)
+
+	// Output:
+	// Response Status: 201 Created
+	// Content Type: application/json
+	// ["http://localhost/link1","http://localhost/link2"]
+}
+
+// ExampleGetLink demonstrates how to resolve a short link to its original URL.
+func ExampleLinksHandlers_GetLink() {
+	ctrl := gomock.NewController(&testing.T{})
+	defer ctrl.Finish()
+
+	// Create a mock LinksService.
+	mockLinksService := mocks.NewMockLinksService(ctrl)
+
+	// Define expectation: expect one call to Get with specific ID.
+	id := "abc123"
+	originalURL := "https://example.com"
+	mockLinksService.EXPECT().Get(gomock.Any(), id).Return(originalURL, nil)
+
+	// Create a new LinksHandlers instance using the mock service.
+	handlers := NewLinksHandlers(mockLinksService)
+
+	// Create a simple HTTP request.
+	request, _ := http.NewRequest(http.MethodGet, "/"+id, nil)
+
+	// Record the response using httptest.
+	recorder := httptest.NewRecorder()
+
+	// Execute the GetLink method.
+	handlers.GetLink(recorder, request)
+
+	// Output:
+	// Response Status: 307 Temporary Redirect
+	// Location: https://example.com
+}
+
+// ExampleLinksHandlers_AddLinkInText demonstrates how to create a link from raw text input.
+func ExampleLinksHandlers_AddLinkInText() {
+	ctrl := gomock.NewController(&testing.T{})
+	defer ctrl.Finish()
+
+	// Create a mock LinksService.
+	mockLinksService := mocks.NewMockLinksService(ctrl)
+
+	// Define expectation: expect one call to Add with specific parameters.
+	linkToCreate := models.OriginLink{
+		URL: "https://example.com",
+	}
+	resultURL := "http://localhost/test-short-url"
+	mockLinksService.EXPECT().Add(gomock.Any(), linkToCreate, "localhost").Return(resultURL, nil)
+
+	// Create a new LinksHandlers instance using the mock service.
+	handlers := NewLinksHandlers(mockLinksService)
+
+	// Create a simple HTTP request.
+	reqBody := "https://example.com"
+	request, _ := http.NewRequest(http.MethodPost, "/", bytes.NewBufferString(reqBody))
+
+	// Record the response using httptest.
+	recorder := httptest.NewRecorder()
+
+	// Execute the AddLinkInText method.
+	handlers.AddLinkInText(recorder, request)
+
+	// Output:
+	// Response Status: 201 Created
+	// Content Type: text/plain
+	// http://localhost/test-short-url
+}
 
 var c = &config.Config{
 	StorageFilePaths: "test.json",
