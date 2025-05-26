@@ -1,6 +1,7 @@
 package app
 
 import (
+	"main/internal/adapters"
 	"main/internal/constants"
 	"main/internal/services"
 	"net/http"
@@ -44,12 +45,14 @@ func TestPing(t *testing.T) {
 			},
 		},
 	}
+	logger := adapters.GetLogger()
+	defer adapters.SyncLogger()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/ping", nil)
 			w := httptest.NewRecorder()
 
-			r, _ := NewRepository(c)
+			r, _ := NewRepository(c, logger)
 			l := services.NewHealthService(r.health)
 			h := NewHealthHandlers(l)
 

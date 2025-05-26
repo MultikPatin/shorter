@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/google/uuid"
+	"main/internal/adapters"
 	"main/internal/config"
 	"main/internal/constants"
 	"main/internal/models"
@@ -53,12 +54,14 @@ func TestAddLinkInText(t *testing.T) {
 			},
 		},
 	}
+	logger := adapters.GetLogger()
+	defer adapters.SyncLogger()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/", nil)
 			w := httptest.NewRecorder()
 
-			r, _ := NewRepository(c)
+			r, _ := NewRepository(c, logger)
 			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
@@ -122,6 +125,8 @@ func TestAddLink(t *testing.T) {
 			body: ``,
 		},
 	}
+	logger := adapters.GetLogger()
+	defer adapters.SyncLogger()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var buf bytes.Buffer
@@ -130,7 +135,7 @@ func TestAddLink(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten", &buf)
 			w := httptest.NewRecorder()
 
-			r, _ := NewRepository(c)
+			r, _ := NewRepository(c, logger)
 			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
@@ -197,6 +202,8 @@ func TestAddLinks(t *testing.T) {
 			body: ``,
 		},
 	}
+	logger := adapters.GetLogger()
+	defer adapters.SyncLogger()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var buf bytes.Buffer
@@ -205,7 +212,7 @@ func TestAddLinks(t *testing.T) {
 			request := httptest.NewRequest(test.req.method, "/api/shorten/batch", &buf)
 			w := httptest.NewRecorder()
 
-			r, _ := NewRepository(c)
+			r, _ := NewRepository(c, logger)
 			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 
@@ -255,6 +262,8 @@ func TestGetLink(t *testing.T) {
 			},
 		},
 	}
+	logger := adapters.GetLogger()
+	defer adapters.SyncLogger()
 	ctx := context.Background()
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -265,7 +274,7 @@ func TestGetLink(t *testing.T) {
 				return
 			}
 
-			r, _ := NewRepository(c)
+			r, _ := NewRepository(c, logger)
 			l := services.NewLinksService(c, r.links)
 			h := NewLinksHandlers(l)
 

@@ -19,8 +19,9 @@ import (
 	"main/internal/adapters"
 	"main/internal/app"
 	"main/internal/config"
-	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"os/signal"
 )
 
 func main() {
@@ -29,26 +30,23 @@ func main() {
 
 	c := config.Parse(logger)
 
-	shorterApp, err := app.NewApp(c)
+	a, err := app.NewApp(c, logger)
 	if err != nil {
-		logger.Fatalw(err.Error(), "event", "start server")
+		logger.Fatalw(err.Error(), "event", "initialize application")
 		return
 	}
-	defer shorterApp.Close()
+	defer a.Close()
 
-	logger.Infow(
-		"Starting server",
-		"addr", c.Addr,
-	)
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, os.Interrupt)
 
 	go func() {
-		err := http.ListenAndServe(c.PProfAddr, nil)
-		if err != nil {
-			logger.Errorf("error starting PProf listener: %s", err)
-		}
+		<-stopChan
+		a.Close()
+		os.Exit(0)
 	}()
 
-	if err := http.ListenAndServe(shorterApp.Addr, shorterApp.Router); err != nil {
+	if err := a.StartServer(); err != nil {
 		logger.Fatalw(err.Error(), "event", "start server")
 	}
 }
