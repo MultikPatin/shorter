@@ -4,11 +4,13 @@ import (
 	"context"
 	"main/internal/adapters"
 	"main/internal/models"
+	"os"
 	"testing"
 )
 
 func BenchmarkInMemoryMethods(b *testing.B) {
 	file := "test.json"
+	defer os.Remove(file)
 	logger := adapters.GetLogger()
 	ctx := context.Background()
 	short := "Short"

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/go-chi/chi/v5"
 	"io"
 	"main/internal/constants"
 	"main/internal/interfaces"
@@ -40,7 +39,7 @@ func (h *LinksHandlers) GetLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortLink := chi.URLParam(r, "id")
+	shortLink := r.PathValue("id")
 
 	originLink, err := h.linksService.Get(ctx, shortLink)
 	if err != nil {
