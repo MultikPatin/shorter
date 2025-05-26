@@ -13,16 +13,19 @@ import (
 	"main/internal/services"
 )
 
+// LinksRepository manages CRUD operations for links stored in a PostgreSQL database.
 type LinksRepository struct {
-	db *PostgresDB
+	db *PostgresDB // Reference to the PostgreSQL database handler.
 }
 
+// NewLinksRepository constructs a new LinksRepository instance connected to a specific PostgresDB.
 func NewLinksRepository(db *PostgresDB) *LinksRepository {
 	return &LinksRepository{
 		db: db,
 	}
 }
 
+// Add inserts a new link record into the database, handling potential conflicts.
 func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (string, error) {
 	userID := ctx.Value(constants.UserIDKey).(int64)
 
@@ -45,6 +48,7 @@ func (r *LinksRepository) Add(ctx context.Context, addedLink models.AddedLink) (
 	return shortLink, services.ErrConflict
 }
 
+// AddBatch bulk-adds multiple links atomically using transactions.
 func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.AddedLink) ([]models.Result, error) {
 	userID := ctx.Value(constants.UserIDKey).(int64)
 
@@ -71,6 +75,7 @@ func (r *LinksRepository) AddBatch(ctx context.Context, addedLinks []models.Adde
 	return results, nil
 }
 
+// Get retrieves the original URL associated with a given short link.
 func (r *LinksRepository) Get(ctx context.Context, short string) (string, error) {
 	var originalLink string
 	var isDeleted bool

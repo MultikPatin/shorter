@@ -5,12 +5,14 @@ import (
 	"main/internal/interfaces"
 )
 
+// InMemoryDB represents an in-memory database backed by file storage.
 type InMemoryDB struct {
-	links      map[string]string
-	producerFS interfaces.FileStorageProducer
-	consumerFS interfaces.FileStorageConsumer
+	links      map[string]string              // Map holding the short-to-long URL mappings.
+	producerFS interfaces.FileStorageProducer // Interface implementation for writing to persistent storage.
+	consumerFS interfaces.FileStorageConsumer // Interface implementation for reading from persistent storage.
 }
 
+// Close closes both the producer and consumer file storages.
 func (db *InMemoryDB) Close() error {
 	err := db.producerFS.Close()
 	if err != nil {
@@ -23,25 +25,21 @@ func (db *InMemoryDB) Close() error {
 	return nil
 }
 
+// Ping performs a health check operation, always returning success since it's an in-memory DB.
 func (db *InMemoryDB) Ping() error {
 	return nil
 }
 
+// NewInMemoryDB initializes a new in-memory database instance with file-backed persistence.
 func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) {
 	producerFS, err := NewFileProducer(path)
 	if err != nil {
-		logger.Infow(
-			"Create producerFS",
-			"error", err.Error(),
-		)
+		logger.Infow("Failed to create producer file storage", "error", err.Error())
 		return nil, err
 	}
 	consumerFS, err := NewFileConsumer(path)
 	if err != nil {
-		logger.Infow(
-			"Create consumerFS",
-			"error", err.Error(),
-		)
+		logger.Infow("Failed to create consumer file storage", "error", err.Error())
 		return nil, err
 	}
 	db := InMemoryDB{
@@ -51,15 +49,13 @@ func NewInMemoryDB(path string, logger *zap.SugaredLogger) (*InMemoryDB, error) 
 	}
 	err = db.loadFromFile()
 	if err != nil {
-		logger.Infow(
-			"Load events from file",
-			"error", err.Error(),
-		)
+		logger.Infow("Failed to load events from file", "error", err.Error())
 		return nil, err
 	}
-	return &db, err
+	return &db, nil
 }
 
+// loadFromFile loads existing URL mapping events from the consumer file storage into memory.
 func (db *InMemoryDB) loadFromFile() error {
 	events, err := db.consumerFS.ReadAllEvents()
 	if err != nil {

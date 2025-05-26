@@ -12,8 +12,10 @@ import (
 	"time"
 )
 
+// UserService users service for authentication.
 var UserService interfaces.UsersService
 
+// Authentication wraps the next handler with JWT-based authentication.
 func Authentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if UserService != nil {
@@ -49,6 +51,7 @@ func Authentication(next http.Handler) http.Handler {
 	})
 }
 
+// verifyJWT validates a JWT token and extracts the user ID claim.
 func verifyJWT(tokenStr string) (*models.Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &models.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -66,6 +69,7 @@ func verifyJWT(tokenStr string) (*models.Claims, error) {
 	return claims, nil
 }
 
+// setJWTCookie generates a JWT token and packages it into an HTTP cookie.
 func setJWTCookie(userID int64) (*http.Cookie, error) {
 	tokenStr, err := generateJWT(userID)
 	if err != nil {
@@ -81,6 +85,7 @@ func setJWTCookie(userID int64) (*http.Cookie, error) {
 	return &cookie, nil
 }
 
+// generateJWT issues a signed JWT token with a specified user ID and expiry.
 func generateJWT(userID int64) (string, error) {
 	expirationTime := time.Now().Add(constants.TokenExp)
 	claims := &models.Claims{

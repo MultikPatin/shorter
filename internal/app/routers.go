@@ -5,6 +5,7 @@ import (
 	"main/internal/middleware"
 )
 
+// NewRouters constructs and configures the main router with middleware and routes.
 func NewRouters(h *Handlers) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.AccessLogger)
