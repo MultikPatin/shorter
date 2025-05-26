@@ -75,10 +75,12 @@ func ExampleLinksHandlers_AddLink() {
 
 	fmt.Printf("Response Status: %v\n", recorder.Code)
 	fmt.Printf("Content Type: %v\n", recorder.Header().Get("Content-Type"))
+	fmt.Printf("Response body: %v\n", recorder.Body.String())
 
 	// Output:
 	// Response Status: 201
 	// Content Type: application/json
+	// Response body: {"result":"http://localhost:8080/test-short-url"}
 
 }
 
@@ -127,10 +129,12 @@ func ExampleLinksHandlers_AddLinks() {
 
 	fmt.Printf("Response Status: %v\n", recorder.Code)
 	fmt.Printf("Content Type: %v\n", recorder.Header().Get("Content-Type"))
+	fmt.Printf("Response body: %v\n", recorder.Body.String())
 
 	// Output:
 	// Response Status: 201
 	// Content Type: application/json
+	// Response body: [{"short_url":"http://localhost/link1"},{"short_url":"http://localhost/link2"}]
 }
 
 // ExampleGetLink demonstrates how to resolve a short link to its original URL.
