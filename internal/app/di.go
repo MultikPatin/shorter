@@ -27,13 +27,13 @@ type Handlers struct {
 
 // App encapsulates the core application state and dependencies.
 type App struct {
-	Services *Services          // Business logic and service instances.
-	conf     *config.Config     // Logger for application-wide logging.
-	log      *zap.SugaredLogger // Configuration settings.
 	Router   *chi.Mux           // Main router for handling HTTP requests.
-	wg       sync.WaitGroup     // Wait group for tracking background tasks.
-	ctx      context.Context    // Application context for signal propagation.
+	Services *Services          // Business logic and service instances.
+	log      *zap.SugaredLogger // Configuration settings.
+	conf     *config.Config     // Logger for application-wide logging.
 	cancel   context.CancelFunc // Function to cancel the application context.
+	ctx      context.Context    // Application context for signal propagation.
+	wg       sync.WaitGroup     // Wait group for tracking background tasks.
 }
 
 // NewApp constructs a fully-configured application instance.

@@ -17,11 +17,11 @@ const (
 
 // Config stores all the necessary configurations from both environment variables and command line inputs.
 type Config struct {
+	PostgresDNS      *url.URL // Database connection details (Data Source Name).
 	PProfAddr        string   // Address for pprof profiling endpoint.
 	Addr             string   // Server listening address.
 	ShortLinkPrefix  string   // Base URL for short links.
 	StorageFilePaths string   // Path where storage files are located.
-	PostgresDNS      *url.URL // Database connection details (Data Source Name).
 }
 
 // envConfig holds configuration settings retrieved from environment variables.

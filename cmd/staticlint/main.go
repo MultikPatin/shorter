@@ -7,6 +7,9 @@
 //
 // Below are descriptions of all the analyzers connected by this package:
 //
+// #### Custom Analyzers:
+// - **osexit**: Prohibits using a direct os.Exit call.
+//
 // #### Core Analyzers:
 // - **appends**: Checks correct usage of built-in slice extension functions like `append`.
 // - **asmdecl**: Verifies compatibility between assembly declarations and corresponding Go definitions.

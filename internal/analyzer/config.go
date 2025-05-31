@@ -85,6 +85,7 @@ func LoadConfig() (*ConfigData, error) {
 // It combines standard Go analyzers with selected staticcheck analyzers.
 func Setup(cfg *ConfigData) []*analysis.Analyzer {
 	analyzers := []*analysis.Analyzer{
+		OsExitAnalyzer,
 		appends.Analyzer,
 		asmdecl.Analyzer,
 		assign.Analyzer,
