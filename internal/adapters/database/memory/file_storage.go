@@ -70,10 +70,12 @@ func (fs *FileProducer) WriteEvent(event *models.Event) error {
 		return err
 	}
 
-	if _, err := fs.writer.Write(data); err != nil {
+	_, err = fs.writer.Write(data)
+	if err != nil {
 		return err
 	}
-	if err := fs.writer.WriteByte('\n'); err != nil { // Separate records with newline.
+	err = fs.writer.WriteByte('\n')
+	if err != nil {
 		return err
 	}
 
