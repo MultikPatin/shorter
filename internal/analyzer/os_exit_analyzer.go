@@ -7,13 +7,22 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 )
 
+// OsExitAnalyzer prohibits the use of direct calls to os.Exit().
+//
+// This analyzer checks for direct invocations of os.Exit() within functions
+// in the main package. Directly calling os.Exit() is discouraged because it
+// bypasses normal error handling mechanisms and program lifecycle management.
+// Instead, it's recommended to return an error from the main function,
+// allowing the standard runtime handler to terminate the application properly.
 var OsExitAnalyzer = &analysis.Analyzer{
 	Name:     "osexit",
 	Doc:      "prohibits using a direct os.Exit call",
 	Run:      run,
-	Requires: []*analysis.Analyzer{inspect.Analyzer},
+	Requires: []*analysis.Analyzer{inspect.Analyzer}, // Requires the inspect tool for analyzing AST
 }
 
+// run is executed when analysis runs. It traverses the abstract syntax tree
+// looking for os.Exit() calls. If such a call is found, the analyzer reports a warning.
 func run(pass *analysis.Pass) (interface{}, error) {
 	result := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
