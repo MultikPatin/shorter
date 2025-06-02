@@ -13,9 +13,19 @@
 //	-f | Command-line option specifying file storage paths.
 //	-b | Base URL for short links passed via command-line.
 //	-d | Postgres DSN given on the command line.
+//
+// Compile the program into a binary named 'shortenerapp', embedding version, build timestamp, and Git commit hash,
+// then immediately execute the compiled binary.
+//
+//	go build -ldflags="\
+//	-X 'main.buildVersion=v1.0' \
+//	-X 'main.buildDate=`date '+%Y-%m-%dT%H:%M:%SZ'`' \
+//	-X 'main.buildCommit=`git rev-parse HEAD`'" \
+//	-o shortenerapp && ./shortenerapp
 package main
 
 import (
+	"fmt"
 	"main/internal/adapters"
 	"main/internal/app"
 	"main/internal/config"
@@ -27,6 +37,10 @@ import (
 )
 
 func main() {
+	fmt.Printf("Build version: %s\n", buildVersion)
+	fmt.Printf("Build date: %s\n", buildDate)
+	fmt.Printf("Build commit: %s\n", buildCommit)
+
 	logger := adapters.GetLogger()
 	defer adapters.SyncLogger()
 
