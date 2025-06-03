@@ -30,15 +30,15 @@ func (p *PostgresDB) Ping() error {
 }
 
 // NewPostgresDB establishes a new PostgreSQL database connection using provided credentials.
-func NewPostgresDB(PostgresDNS *url.URL, logger *zap.SugaredLogger) (*PostgresDB, error) {
+func NewPostgresDB(PostgresDSN *url.URL, logger *zap.SugaredLogger) (*PostgresDB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	host := PostgresDNS.Hostname()
-	port := PostgresDNS.Port()
-	user := PostgresDNS.User.Username()
-	password, _ := PostgresDNS.User.Password()
-	dbname := PostgresDNS.Path[1:]
+	host := PostgresDSN.Hostname()
+	port := PostgresDSN.Port()
+	user := PostgresDSN.User.Username()
+	password, _ := PostgresDSN.User.Password()
+	dbname := PostgresDSN.Path[1:]
 
 	ps := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)

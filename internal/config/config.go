@@ -17,7 +17,7 @@ const (
 
 // Config stores all the necessary configurations from both environment variables and command line inputs.
 type Config struct {
-	PostgresDNS      *url.URL // Database connection details (Data Source Name).
+	PostgresDSN      *url.URL // Database connection details (Data Source Name).
 	PProfAddr        string   // Address for pprof profiling endpoint.
 	Addr             string   // Server listening address.
 	ShortLinkPrefix  string   // Base URL for short links.
@@ -29,7 +29,7 @@ type envConfig struct {
 	StorageFilePaths string `env:"FILE_STORAGE_PATH"` // File storage paths specified via an environment variable.
 	Addr             string `env:"SERVER_ADDRESS"`    // Server address defined by an environment variable.
 	ShortLinkPrefix  string `env:"BASE_URL"`          // Short link base URL configured via an environment variable.
-	PostgresDNS      string `env:"DATABASE_DSN"`      // PostgreSQL Data Source Name received from an environment variable.
+	PostgresDSN      string `env:"DATABASE_DSN"`      // PostgreSQL Data Source Name received from an environment variable.
 }
 
 // cmdConfig holds configuration settings obtained from command-line flags.
@@ -37,7 +37,7 @@ type cmdConfig struct {
 	Addr             string // Command-line argument for server address.
 	StorageFilePaths string // Command-line option specifying file storage paths.
 	ShortLinkPrefix  string // Base URL for short links passed via command-line.
-	PostgresDNS      string // Postgres DSN given on the command line.
+	PostgresDSN      string // Postgres DSN given on the command line.
 }
 
 // servHost encapsulates information about the network service's host and port.
@@ -81,10 +81,10 @@ func Parse(logger *zap.SugaredLogger) *Config {
 	if cfg.StorageFilePaths == "" {
 		cfg.StorageFilePaths = defaultStorageFilePath
 	}
-	if envCfg.PostgresDNS != "" {
-		cfg.PostgresDNS, _ = parseDSN(envCfg.PostgresDNS)
-	} else if cmdCfg.PostgresDNS != "" {
-		cfg.PostgresDNS, _ = parseDSN(cmdCfg.PostgresDNS)
+	if envCfg.PostgresDSN != "" {
+		cfg.PostgresDSN, _ = parseDSN(envCfg.PostgresDSN)
+	} else if cmdCfg.PostgresDSN != "" {
+		cfg.PostgresDSN, _ = parseDSN(cmdCfg.PostgresDSN)
 	}
 	cfg.PProfAddr = "localhost:6060"
 
@@ -108,7 +108,7 @@ func parseCmd() (*cmdConfig, error) {
 	hostPort := new(servHost)
 	_ = flag.Value(hostPort)
 
-	flag.StringVar(&cfg.PostgresDNS, "d", "", "Postgres DSN")
+	flag.StringVar(&cfg.PostgresDSN, "d", "", "Postgres DSN")
 	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "Short link server")
 	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
 	flag.Var(hostPort, "a", "Network address host:port")

@@ -198,7 +198,7 @@ func NewServices(c *config.Config, l *zap.SugaredLogger) (*Services, error) {
 func NewRepository(c *config.Config, logger *zap.SugaredLogger) (*Repository, error) {
 	var repository *Repository
 
-	if c.PostgresDNS == nil {
+	if c.PostgresDSN == nil {
 		db, err := memory.NewInMemoryDB(c.StorageFilePaths, logger)
 		if err != nil {
 			return nil, err
@@ -206,7 +206,7 @@ func NewRepository(c *config.Config, logger *zap.SugaredLogger) (*Repository, er
 		logger.Info("Create InMemoryDB Connection")
 		repository = NewInMemoryRepository(db)
 	} else {
-		db, err := psql.NewPostgresDB(c.PostgresDNS, logger)
+		db, err := psql.NewPostgresDB(c.PostgresDSN, logger)
 		if err != nil {
 			return nil, err
 		}
