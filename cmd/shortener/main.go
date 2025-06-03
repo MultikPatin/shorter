@@ -32,7 +32,6 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 )
 
@@ -53,22 +52,25 @@ func main() {
 	}
 	defer a.Close()
 
-	var wg sync.WaitGroup // Используем WaitGroup для ожидания завершения процессов
-
-	wg.Add(1)
-
-	stopChan := make(chan os.Signal, 1)
-	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
+	doneCh := make(chan struct{})
 
 	go func() {
-		<-stopChan
-		a.Close()
-		wg.Done() // Уведомляем о завершении процесса закрытия приложения
+		stopChan := make(chan os.Signal, 1)
+		signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case <-stopChan:
+			logger.Info("Received shutdown signal.")
+			a.Close()
+		case <-doneCh:
+			logger.Info("Application closed normally.")
+		}
+		close(doneCh)
 	}()
 
 	if err := a.StartServer(); err != nil {
 		logger.Fatalw(err.Error(), "event", "start server")
 	}
 
-	wg.Wait() // Ждем пока завершится закрытие сервера
+	<-doneCh
 }

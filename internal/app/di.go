@@ -61,7 +61,9 @@ func NewApp(c *config.Config, l *zap.SugaredLogger) (*App, error) {
 // StartServer boots the primary HTTP server and handles graceful shutdowns.
 func (a *App) StartServer() error {
 	a.wg.Add(1)
+
 	go a.startPPROFServer()
+
 	a.log.Infow("Starting server", "addr", a.conf.Addr)
 
 	srv := &http.Server{
