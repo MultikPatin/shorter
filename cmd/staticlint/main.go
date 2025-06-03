@@ -154,15 +154,15 @@
 package main
 
 import (
-	"fmt"
 	"golang.org/x/tools/go/analysis/multichecker"
+	"log"
 	"main/internal/analyzer"
 )
 
 func main() {
 	cfg, err := analyzer.LoadConfig()
 	if err != nil {
-		panic(fmt.Sprintf("Failed to load config: %v", err))
+		log.Fatalf("Failed to load config: %v", err)
 	}
 
 	analyzers := analyzer.Setup(cfg)
