@@ -27,13 +27,13 @@ type Handlers struct {
 
 // App encapsulates the core application state and dependencies.
 type App struct {
-	conf     *config.Config     // Logger for application-wide logging.
-	log      *zap.SugaredLogger // Configuration settings.
 	Router   *chi.Mux           // Main router for handling HTTP requests.
 	Services *Services          // Business logic and service instances.
-	wg       sync.WaitGroup     // Wait group for tracking background tasks.
-	ctx      context.Context    // Application context for signal propagation.
+	log      *zap.SugaredLogger // Configuration settings.
+	conf     *config.Config     // Logger for application-wide logging.
 	cancel   context.CancelFunc // Function to cancel the application context.
+	ctx      context.Context    // Application context for signal propagation.
+	wg       sync.WaitGroup     // Wait group for tracking background tasks.
 }
 
 // NewApp constructs a fully-configured application instance.
@@ -61,7 +61,9 @@ func NewApp(c *config.Config, l *zap.SugaredLogger) (*App, error) {
 // StartServer boots the primary HTTP server and handles graceful shutdowns.
 func (a *App) StartServer() error {
 	a.wg.Add(1)
+
 	go a.startPPROFServer()
+
 	a.log.Infow("Starting server", "addr", a.conf.Addr)
 
 	srv := &http.Server{
@@ -198,7 +200,7 @@ func NewServices(c *config.Config, l *zap.SugaredLogger) (*Services, error) {
 func NewRepository(c *config.Config, logger *zap.SugaredLogger) (*Repository, error) {
 	var repository *Repository
 
-	if c.PostgresDNS == nil {
+	if c.PostgresDSN == nil {
 		db, err := memory.NewInMemoryDB(c.StorageFilePaths, logger)
 		if err != nil {
 			return nil, err
@@ -206,7 +208,7 @@ func NewRepository(c *config.Config, logger *zap.SugaredLogger) (*Repository, er
 		logger.Info("Create InMemoryDB Connection")
 		repository = NewInMemoryRepository(db)
 	} else {
-		db, err := psql.NewPostgresDB(c.PostgresDNS, logger)
+		db, err := psql.NewPostgresDB(c.PostgresDSN, logger)
 		if err != nil {
 			return nil, err
 		}
