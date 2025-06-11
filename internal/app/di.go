@@ -112,7 +112,7 @@ func (a *App) StartServer() error {
 	go a.startPPROFServer()
 
 	a.log.Infow("Starting server", "addr", a.conf.Addr)
-	a.log.Info("HTTPS status: ", a.conf.HttpsEnable)
+	a.log.Info("HTTPS status: ", a.conf.HTTPSEnable)
 
 	srv := &http.Server{
 		Addr:    a.conf.Addr,
@@ -120,7 +120,7 @@ func (a *App) StartServer() error {
 	}
 	errCh := make(chan error)
 
-	if a.conf.HttpsEnable {
+	if a.conf.HTTPSEnable {
 		tlsFiles, err := getTLSFiles()
 		if err != nil {
 			return err
