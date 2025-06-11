@@ -9,12 +9,15 @@ import (
 	"log"
 	"main/internal/adapters/database/memory"
 	"main/internal/adapters/database/psql"
+	"main/internal/cert"
 	"main/internal/config"
 	"main/internal/constants"
 	"main/internal/interfaces"
 	"main/internal/middleware"
 	"main/internal/services"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -58,6 +61,50 @@ func NewApp(c *config.Config, l *zap.SugaredLogger) (*App, error) {
 	return app, nil
 }
 
+// TLSFiles contain paths to the TLS certificate and private key files
+type TLSFiles struct {
+	CertFile string
+	KeyFile  string
+}
+
+// getTLSFiles returns the paths to the TLS certificate and private key files.
+// If either file is missing, it generates them using cert.GenerateTLSFiles.
+func getTLSFiles() (*TLSFiles, error) {
+	exPath, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	exeDir := filepath.Dir(exPath)
+	certFile := filepath.Join(exeDir, constants.CertFile)
+	keyFile := filepath.Join(exeDir, constants.KeyFile)
+
+	if _, err := os.Stat(certFile); err != nil {
+		if os.IsNotExist(err) {
+			cert.GenerateTLSFiles(certFile, keyFile)
+			return &TLSFiles{
+				CertFile: certFile,
+				KeyFile:  keyFile,
+			}, nil
+		}
+		return nil, err
+	}
+	if _, err := os.Stat(keyFile); err != nil {
+		if os.IsNotExist(err) {
+			cert.GenerateTLSFiles(certFile, keyFile)
+			return &TLSFiles{
+				CertFile: certFile,
+				KeyFile:  keyFile,
+			}, nil
+		}
+		return nil, err
+	}
+
+	return &TLSFiles{
+		CertFile: certFile,
+		KeyFile:  keyFile,
+	}, nil
+}
+
 // StartServer boots the primary HTTP server and handles graceful shutdowns.
 func (a *App) StartServer() error {
 	a.wg.Add(1)
@@ -65,19 +112,33 @@ func (a *App) StartServer() error {
 	go a.startPPROFServer()
 
 	a.log.Infow("Starting server", "addr", a.conf.Addr)
+	a.log.Info("HTTPS status: ", a.conf.HttpsEnable)
 
 	srv := &http.Server{
 		Addr:    a.conf.Addr,
 		Handler: a.Router,
 	}
-
 	errCh := make(chan error)
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			errCh <- fmt.Errorf("ListenAndServe failed: %w", err)
+
+	if a.conf.HttpsEnable {
+		tlsFiles, err := getTLSFiles()
+		if err != nil {
+			return err
 		}
-		close(errCh)
-	}()
+		go func() {
+			if err := srv.ListenAndServeTLS(tlsFiles.CertFile, tlsFiles.KeyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				errCh <- fmt.Errorf("ListenAndServeTLS failed: %w", err)
+			}
+			close(errCh)
+		}()
+	} else {
+		go func() {
+			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				errCh <- fmt.Errorf("ListenAndServe failed: %w", err)
+			}
+			close(errCh)
+		}()
+	}
 
 	select {
 	case err := <-errCh:

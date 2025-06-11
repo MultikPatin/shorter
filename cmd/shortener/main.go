@@ -46,7 +46,6 @@ func main() {
 	defer adapters.SyncLogger()
 
 	c := config.Parse(logger)
-	fmt.Printf("Config: %+v\n", c)
 
 	a, err := app.NewApp(c, logger)
 	if err != nil {
