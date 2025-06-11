@@ -79,7 +79,7 @@ func (fs *FileProducer) WriteEvent(event *models.Event) error {
 		return err
 	}
 
-	err = fs.writer.Flush() // Ensure immediate write to disk.
+	err = fs.writer.Flush()
 	return err
 }
 

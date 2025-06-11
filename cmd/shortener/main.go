@@ -6,6 +6,7 @@
 //	SERVER_ADDRESS    | Server address defined by an environment variable.
 //	BASE_URL          | Short link base URL configured via an environment variable.
 //	DATABASE_DSN      | PostgreSQL Data Source Name received from an environment variable.
+//	ENABLE_HTTPS      | Indicates whether HTTPS is enabled for the server.
 //
 // command-line arguments:
 //
@@ -13,6 +14,7 @@
 //	-f | Command-line option specifying file storage paths.
 //	-b | Base URL for short links passed via command-line.
 //	-d | Postgres DSN given on the command line.
+//	-s | Indicates whether HTTPS is enabled for the server ("true", "yes", "1" -> true, "false", "no", "0" -> false).
 //
 // Compile the program into a binary named 'shortenerapp', embedding version, build timestamp, and Git commit hash,
 // then immediately execute the compiled binary.
@@ -44,6 +46,7 @@ func main() {
 	defer adapters.SyncLogger()
 
 	c := config.Parse(logger)
+	fmt.Printf("Config: %+v\n", c)
 
 	a, err := app.NewApp(c, logger)
 	if err != nil {

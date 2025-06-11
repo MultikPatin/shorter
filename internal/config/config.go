@@ -22,6 +22,7 @@ type Config struct {
 	Addr             string   // Server listening address.
 	ShortLinkPrefix  string   // Base URL for short links.
 	StorageFilePaths string   // Path where storage files are located.
+	HttpsEnable      bool     // Indicates whether HTTPS is enabled for the server.
 }
 
 // envConfig holds configuration settings retrieved from environment variables.
@@ -30,6 +31,7 @@ type envConfig struct {
 	Addr             string `env:"SERVER_ADDRESS"`    // Server address defined by an environment variable.
 	ShortLinkPrefix  string `env:"BASE_URL"`          // Short link base URL configured via an environment variable.
 	PostgresDSN      string `env:"DATABASE_DSN"`      // PostgreSQL Data Source Name received from an environment variable.
+	HttpsEnable      string `env:"ENABLE_HTTPS"`      // Indicates whether HTTPS is enabled for the server.
 }
 
 // cmdConfig holds configuration settings obtained from command-line flags.
@@ -38,6 +40,7 @@ type cmdConfig struct {
 	StorageFilePaths string // Command-line option specifying file storage paths.
 	ShortLinkPrefix  string // Base URL for short links passed via command-line.
 	PostgresDSN      string // Postgres DSN given on the command line.
+	HttpsEnable      string // Indicates whether HTTPS is enabled for the server.
 }
 
 // servHost encapsulates information about the network service's host and port.
@@ -50,23 +53,25 @@ type servHost struct {
 func Parse(logger *zap.SugaredLogger) *Config {
 	cfg := &Config{}
 
-	// Attempt to load environment-based configuration.
 	envCfg, err := parseEnv()
 	if err != nil {
 		logger.Infow("Error while parsing environment variables", "error", err.Error())
 	}
 
-	// Load command-line based configuration.
 	cmdCfg, err := parseCmd()
 	if err != nil {
 		logger.Infow("Error while parsing command-line arguments", "error", err.Error())
 	}
 
-	// Prefer environment variables over command-line arguments but fall back accordingly.
 	if envCfg.Addr == "" {
 		cfg.Addr = cmdCfg.Addr
 	} else {
 		cfg.Addr = envCfg.Addr
+	}
+	if envCfg.HttpsEnable == "" {
+		cfg.HttpsEnable = resolveBool(cmdCfg.HttpsEnable)
+	} else {
+		cfg.HttpsEnable = resolveBool(envCfg.HttpsEnable)
 	}
 	if envCfg.ShortLinkPrefix == "" {
 		cfg.ShortLinkPrefix = cmdCfg.ShortLinkPrefix
@@ -111,6 +116,7 @@ func parseCmd() (*cmdConfig, error) {
 	flag.StringVar(&cfg.PostgresDSN, "d", "", "Postgres DSN")
 	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "Short link server")
 	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
+	flag.StringVar(&cfg.HttpsEnable, "s", "0", "HTTPS is enabled")
 	flag.Var(hostPort, "a", "Network address host:port")
 	flag.Parse()
 
@@ -157,4 +163,15 @@ func parseDSN(dsn string) (*url.URL, error) {
 		return nil, fmt.Errorf("failed to parse DSN: %w", err)
 	}
 	return u, nil
+}
+
+func resolveBool(arg string) bool {
+	switch strings.ToLower(arg) {
+	case "true", "yes", "1":
+		return true
+	case "false", "no", "0":
+		return false
+	default:
+		return false
+	}
 }
