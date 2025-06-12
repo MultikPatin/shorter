@@ -26,7 +26,7 @@ func Authentication(next http.Handler) http.Handler {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				cookie, err := setJWTCookie(userID)
+				cookie, err = setJWTCookie(userID)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
