@@ -17,10 +17,7 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 	} else if jsonCfg.PostgresDSN != "" {
 		dsn = jsonCfg.PostgresDSN
 	}
-	parsedDsn, err := parseDSN(dsn)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse DSN: %w", err)
-	}
+	parsedDsn, _ := parseDSN(dsn)
 	finalConfig.PostgresDSN = parsedDsn
 
 	if envCfg.Addr != "" {
