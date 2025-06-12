@@ -27,7 +27,7 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.Addr = envCfg.Addr
 	} else if cmdCfg.Addr != "" {
 		finalConfig.Addr = cmdCfg.Addr
-	} else {
+	} else if jsonCfg.Addr != "" {
 		finalConfig.Addr = jsonCfg.Addr
 	}
 
@@ -35,7 +35,7 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.ShortLinkPrefix = envCfg.ShortLinkPrefix
 	} else if cmdCfg.ShortLinkPrefix != "" {
 		finalConfig.ShortLinkPrefix = cmdCfg.ShortLinkPrefix
-	} else {
+	} else if jsonCfg.ShortLinkPrefix != "" {
 		finalConfig.ShortLinkPrefix = jsonCfg.ShortLinkPrefix
 	}
 
@@ -43,19 +43,17 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.StorageFilePaths = envCfg.StorageFilePaths
 	} else if cmdCfg.StorageFilePaths != "" {
 		finalConfig.StorageFilePaths = cmdCfg.StorageFilePaths
-	} else {
+	} else if jsonCfg.StorageFilePaths != "" {
 		finalConfig.StorageFilePaths = jsonCfg.StorageFilePaths
 	}
 
-	httpEnabledStr := ""
 	if envCfg.HTTPSEnable != "" {
-		httpEnabledStr = envCfg.HTTPSEnable
+		finalConfig.HTTPSEnable = resolveBool(envCfg.HTTPSEnable)
 	} else if cmdCfg.HTTPSEnable != "" {
-		httpEnabledStr = cmdCfg.HTTPSEnable
-	} else {
-		httpEnabledStr = fmt.Sprintf("%t", jsonCfg.HTTPSEnable)
+		finalConfig.HTTPSEnable = resolveBool(cmdCfg.HTTPSEnable)
+	} else if jsonCfg.HTTPSEnable != false {
+		finalConfig.HTTPSEnable = jsonCfg.HTTPSEnable
 	}
-	finalConfig.HTTPSEnable = resolveBool(httpEnabledStr)
 
 	finalConfig.PProfAddr = defaultPProfAddr
 	finalConfig.ExecutableDir = exeDir
