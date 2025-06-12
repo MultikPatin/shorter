@@ -8,11 +8,11 @@ import (
 
 // JSONConfig represents the structure of the JSON configuration file.
 type JSONConfig struct {
-	StorageFilePaths string `json:"base_url"`
-	Addr             string `json:"server_address"`
-	ShortLinkPrefix  string `json:"file_storage_path"`
-	PostgresDSN      string `json:"database_dsn"`
-	HTTPSEnable      bool   `json:"enable_https"`
+	StorageFilePaths string `json:"file_storage_path,omitempty"`
+	Addr             string `json:"server_address,omitempty"`
+	ShortLinkPrefix  string `json:"base_url,omitempty"`
+	PostgresDSN      string `json:"database_dsn,omitempty"`
+	HTTPSEnable      bool   `json:"enable_https,omitempty"`
 }
 
 // parseJSON reads and parses the JSON configuration file from the given directory.

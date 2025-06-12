@@ -28,13 +28,11 @@ func Parse(exeDir string, logger *zap.SugaredLogger) *Config {
 	if err != nil {
 		logger.Infow("Error while parsing environment variables", "error", err.Error())
 	}
-	logger.Info("Parsed environment variables", "envCfg", envCfg)
 
 	cmdCfg, err := parseCmd()
 	if err != nil {
 		logger.Infow("Error while parsing command-line arguments", "error", err.Error())
 	}
-	logger.Info("Parsed command-line arguments", "cmdCfg", cmdCfg)
 
 	confDir := "."
 	confFileName := defaultConfFileName
@@ -48,13 +46,11 @@ func Parse(exeDir string, logger *zap.SugaredLogger) *Config {
 	if err != nil {
 		logger.Infow("Error while parsing JSON configuration file", "error", err.Error())
 	}
-	logger.Info("Parsed JSON configuration file", "jsonCfg", jsonCfg)
 
 	cfg, err := mergeConfigs(exeDir, envCfg, cmdCfg, jsonCfg)
 	if err != nil {
 		logger.Infow("Error while merging configurations", "error", err.Error())
 	}
-	logger.Info("Merged configurations", "cfg", cfg)
 
 	return cfg
 }
