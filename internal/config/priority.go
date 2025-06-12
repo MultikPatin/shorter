@@ -51,7 +51,7 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.HTTPSEnable = resolveBool(envCfg.HTTPSEnable)
 	} else if cmdCfg.HTTPSEnable != "" {
 		finalConfig.HTTPSEnable = resolveBool(cmdCfg.HTTPSEnable)
-	} else if jsonCfg.HTTPSEnable != false {
+	} else if jsonCfg.HTTPSEnable {
 		finalConfig.HTTPSEnable = jsonCfg.HTTPSEnable
 	}
 
