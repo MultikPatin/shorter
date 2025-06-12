@@ -6,19 +6,22 @@ import (
 	"strings"
 )
 
+// mergeConfigs merges configuration values with priority: environment > command line > JSON file.
+// It returns a final Config object and any error that occurred during the merge.
+// The priority order is:
+// 1. Environment variables (envCfg)
+// 2. Command line flags (cmdCfg)
+// 3. JSON configuration file (jsonCfg)
 func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *JSONConfig) (*Config, error) {
 	var finalConfig Config
 
-	dsn := ""
 	if envCfg.PostgresDSN != "" {
-		dsn = envCfg.PostgresDSN
+		finalConfig.PostgresDSN, _ = parseDSN(envCfg.PostgresDSN)
 	} else if cmdCfg.PostgresDSN != "" {
-		dsn = cmdCfg.PostgresDSN
+		finalConfig.PostgresDSN, _ = parseDSN(cmdCfg.PostgresDSN)
 	} else if jsonCfg.PostgresDSN != "" {
-		dsn = jsonCfg.PostgresDSN
+		finalConfig.PostgresDSN, _ = parseDSN(jsonCfg.PostgresDSN)
 	}
-	parsedDsn, _ := parseDSN(dsn)
-	finalConfig.PostgresDSN = parsedDsn
 
 	if envCfg.Addr != "" {
 		finalConfig.Addr = envCfg.Addr

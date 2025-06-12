@@ -65,7 +65,6 @@ func main() {
 	}
 
 	c := config.Parse(filepath.Dir(exPath), logger)
-	fmt.Printf("Config: %+v\n", c)
 
 	a, err := app.NewApp(c, logger)
 	if err != nil {
