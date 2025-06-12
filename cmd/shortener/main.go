@@ -77,7 +77,7 @@ func main() {
 
 	go func() {
 		stopChan := make(chan os.Signal, 1)
-		signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 		select {
 		case <-stopChan:
