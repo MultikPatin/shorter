@@ -1,0 +1,7 @@
+{
+  "server_address": "localhost:8080",
+  "base_url": "http://localhost",
+  "file_storage_path": "storage",
+  "database_dsn": "postgresql://postgres:postgres@localhost:5432/test_db",
+  "enable_https": true
+}

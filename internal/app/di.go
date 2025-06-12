@@ -69,12 +69,7 @@ type TLSFiles struct {
 
 // getTLSFiles returns the paths to the TLS certificate and private key files.
 // If either file is missing, it generates them using cert.GenerateTLSFiles.
-func getTLSFiles() (*TLSFiles, error) {
-	exPath, err := os.Executable()
-	if err != nil {
-		return nil, err
-	}
-	exeDir := filepath.Dir(exPath)
+func getTLSFiles(exeDir string) (*TLSFiles, error) {
 	certFile := filepath.Join(exeDir, constants.CertFile)
 	keyFile := filepath.Join(exeDir, constants.KeyFile)
 
@@ -121,7 +116,7 @@ func (a *App) StartServer() error {
 	errCh := make(chan error)
 
 	if a.conf.HTTPSEnable {
-		tlsFiles, err := getTLSFiles()
+		tlsFiles, err := getTLSFiles(a.conf.ExecutableDir)
 		if err != nil {
 			return err
 		}
