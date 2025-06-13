@@ -75,7 +75,10 @@ func getTLSFiles(exeDir string) (*TLSFiles, error) {
 
 	if _, err := os.Stat(certFile); err != nil {
 		if os.IsNotExist(err) {
-			cert.GenerateTLSFiles(certFile, keyFile)
+			err := cert.GenerateTLSFiles(certFile, keyFile)
+			if err != nil {
+				return nil, err
+			}
 			return &TLSFiles{
 				CertFile: certFile,
 				KeyFile:  keyFile,
@@ -85,7 +88,10 @@ func getTLSFiles(exeDir string) (*TLSFiles, error) {
 	}
 	if _, err := os.Stat(keyFile); err != nil {
 		if os.IsNotExist(err) {
-			cert.GenerateTLSFiles(certFile, keyFile)
+			err := cert.GenerateTLSFiles(certFile, keyFile)
+			if err != nil {
+				return nil, err
+			}
 			return &TLSFiles{
 				CertFile: certFile,
 				KeyFile:  keyFile,

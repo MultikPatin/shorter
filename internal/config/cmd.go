@@ -34,7 +34,7 @@ func parseCmd() (*cmdConfig, error) {
 	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "Short link server")
 	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
 	flag.StringVar(&cfg.HTTPSEnable, "s", "0", "HTTPS is enabled")
-	flag.StringVar(&cfg.HTTPSEnable, "c", "", "Name of the configuration file")
+	flag.StringVar(&cfg.ConfFile, "c", "", "Name of the configuration file")
 	flag.Var(hostPort, "a", "Network address host:port")
 	flag.Parse()
 

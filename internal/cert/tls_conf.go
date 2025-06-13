@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"log"
 	"math/big"
 	"net"
 	"os"
@@ -18,10 +17,10 @@ import (
 // and writes them to the specified certFile and keyFile.
 // The certificate is valid for 10 years and includes localhost (IPv4 and IPv6) as IP addresses.
 // If file creation or writing fails, the function will log and exit the program.
-func GenerateTLSFiles(certFile string, keyFile string) {
+func GenerateTLSFiles(certFile string, keyFile string) error {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	cert := &x509.Certificate{
@@ -40,26 +39,27 @@ func GenerateTLSFiles(certFile string, keyFile string) {
 
 	certBytes, err := x509.CreateCertificate(rand.Reader, cert, cert, &privateKey.PublicKey, privateKey)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	certOut, err := os.Create(certFile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer certOut.Close()
 
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes}); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	keyOut, err := os.Create(keyFile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer keyOut.Close()
 
 	if err := pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}); err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
