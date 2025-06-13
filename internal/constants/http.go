@@ -18,4 +18,10 @@ const (
 
 	// Delimiter is the forward slash character commonly used as a path separator in URLs.
 	Delimiter = "/"
+
+	// CertFile is the name of the certificate file used for TLS/SSL.
+	CertFile = "cert.pem"
+
+	// KeyFile is the name of the private key file used for TLS/SSL.
+	KeyFile = "key.pem"
 )
