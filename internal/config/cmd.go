@@ -15,6 +15,7 @@ type cmdConfig struct {
 	PostgresDSN      string // Postgres DSN given on the command line.
 	HTTPSEnable      string // Indicates whether HTTPS is enabled for the server.
 	ConfFile         string // Name of the configuration file.
+	TrustedSubnet    string // Trusted subnet for the server.
 }
 
 // servHost encapsulates information about the network service's host and port.
@@ -35,6 +36,7 @@ func parseCmd() (*cmdConfig, error) {
 	flag.StringVar(&cfg.StorageFilePaths, "f", "", "Path to storage file")
 	flag.StringVar(&cfg.HTTPSEnable, "s", "0", "HTTPS is enabled")
 	flag.StringVar(&cfg.ConfFile, "c", "", "Name of the configuration file")
+	flag.StringVar(&cfg.TrustedSubnet, "t", "", "Trusted subnet")
 	flag.Var(hostPort, "a", "Network address host:port")
 	flag.Parse()
 

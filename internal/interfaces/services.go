@@ -23,3 +23,8 @@ type UsersService interface {
 	GetLinks(ctx context.Context, host string) ([]models.UserLinks, error) // Retrieves all links created by the logged-in user.
 	DeleteLinks(ctx context.Context, shortLinks []string) error            // Deletes specified links created by the user.
 }
+
+// StatsService provides access to statistics-related data.
+type StatsService interface {
+	GetMainStats(ctx context.Context, ip string) (models.Stats, error) // Retrieves overall statistics.
+}

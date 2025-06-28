@@ -13,6 +13,7 @@ type JSONConfig struct {
 	ShortLinkPrefix  string `json:"base_url,omitempty"`
 	PostgresDSN      string `json:"database_dsn,omitempty"`
 	HTTPSEnable      bool   `json:"enable_https,omitempty"`
+	TrustedSubnet    string `json:"trusted_subnet,omitempty"`
 }
 
 // parseJSON reads and parses the JSON configuration file from the given directory.

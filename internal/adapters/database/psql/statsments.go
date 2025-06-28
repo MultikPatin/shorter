@@ -32,4 +32,7 @@ const (
 		SELECT short, origin FROM events WHERE user_id = $1;`
 	deleteLinksByUser = `
 		UPDATE events SET is_deleted = true WHERE short = $1 AND user_id = $2;`
+	// Stats
+	getMainStatsQuery = `
+		SELECT COUNT(DISTINCT user_id), COUNT(*) FROM events;`
 )

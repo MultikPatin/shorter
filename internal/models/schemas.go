@@ -27,3 +27,9 @@ type UserLinksResponse struct {
 	Shorten  string `json:"short_url"`    // Shortened URL.
 	Original string `json:"original_url"` // Original URL.
 }
+
+// MainStatsResponse represents the main statistics of the service.
+type MainStatsResponse struct {
+	Urls  int `json:"urls"`  // Total number of shortened URLs.
+	Users int `json:"users"` // Number of unique users.
+}

@@ -1,13 +1,18 @@
 package services // Package services provides helper functions for generating keys and URLs.
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"main/internal/constants"
+	"net"
 	"net/url"
 )
 
 // shortPre represents a configurable prefix for generated short links.
 var shortPre string
+
+// trustedSubnet represents a configurable trusted subnet for generating keys and URLs.
+var trustedSubnet string
 
 // getKey generates a unique key for a given UUID and prefix.
 // If the prefix is a valid URL, the key includes only the UUID.
@@ -32,4 +37,24 @@ func getResponseLink(k string, p string, h string) string {
 func isURL(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
+// isTrustedSubnet check whether an IP address belongs to a single trusted subnet
+func isTrustedSubnet(ip string) bool {
+	if trustedSubnet == "" {
+		return false
+	}
+	ipAddr := net.ParseIP(ip)
+	if ipAddr == nil {
+		fmt.Println("Invalid IP format")
+		return false
+	}
+
+	_, parsedSubnet, err := net.ParseCIDR(trustedSubnet)
+	if err != nil {
+		fmt.Printf("Error parsing subnet %s: %v\n", trustedSubnet, err)
+		return false
+	}
+
+	return parsedSubnet.Contains(ipAddr)
 }

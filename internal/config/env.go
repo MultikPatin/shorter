@@ -12,6 +12,7 @@ type envConfig struct {
 	PostgresDSN      string `env:"DATABASE_DSN"`      // PostgreSQL Data Source Name received from an environment variable.
 	HTTPSEnable      string `env:"ENABLE_HTTPS"`      // Indicates whether HTTPS is enabled for the server.
 	ConfFile         string `env:"CONFIG"`            // Name of the configuration file.
+	TrustedSubnet    string `env:"TRUSTED_SUBNET"`    // Trusted subnet for the server.
 }
 
 // parseEnv extracts configuration from environment variables.

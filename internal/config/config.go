@@ -20,6 +20,7 @@ type Config struct {
 	StorageFilePaths string   // Path where storage files are located.
 	ExecutableDir    string   // Project directory
 	HTTPSEnable      bool     // Indicates whether HTTPS is enabled for the server.
+	TrustedSubnet    string   // Trusted subnet for the server.
 }
 
 // Parse merges environment variables and command-line options into a single configuration object.
