@@ -26,6 +26,7 @@ type Handlers struct {
 	links  interfaces.LinkHandlers   // Handler for link-related operations.
 	health interfaces.HealthHandlers // Handler for health check endpoints.
 	users  interfaces.UsersHandlers  // Handler for user-specific operations.
+	stats  interfaces.StatsHandlers  // Handler for statistic data operations.
 }
 
 // App encapsulates the core application state and dependencies.
@@ -201,6 +202,7 @@ type Services struct {
 	links      interfaces.LinksService  // Service for link-related operations.
 	health     interfaces.HealthService // Service for health-related operations.
 	users      interfaces.UsersService  // Service for user-specific operations.
+	stats      interfaces.StatsService  // Service for statistics-related operations.
 	Repository *Repository              // Encapsulation of repository access.
 }
 
@@ -218,6 +220,7 @@ type Repository struct {
 	links    interfaces.LinksRepository  // Repository for link operations.
 	users    interfaces.UsersRepository  // Repository for user operations.
 	health   interfaces.HealthRepository // Repository for health checks.
+	stats    interfaces.StatsRepository  // Repository for statistics operations.
 	Database interfaces.DB               // Low-level database connection.
 }
 
@@ -236,6 +239,7 @@ func NewHandlers(s *Services) *Handlers {
 		links:  NewLinksHandlers(s.links),
 		health: NewHealthHandlers(s.health),
 		users:  NewUsersHandlers(s.users),
+		stats:  NewStatsHandlers(s.stats),
 	}
 }
 
@@ -254,6 +258,7 @@ func NewServices(c *config.Config, l *zap.SugaredLogger) (*Services, error) {
 		links:      services.NewLinksService(c, repository.links),
 		health:     services.NewHealthService(repository.health),
 		users:      services.NewUserService(repository.users),
+		stats:      services.NewStatsService(c, repository.stats),
 		Repository: repository,
 	}, nil
 }
@@ -286,6 +291,7 @@ func NewInMemoryRepository(db *memory.InMemoryDB) *Repository {
 		links:    memory.NewLinksRepository(db),
 		users:    nil,
 		health:   memory.NewHealthRepository(db),
+		stats:    memory.NewStatsRepository(db),
 		Database: db,
 	}
 }
@@ -296,6 +302,7 @@ func NewPostgresRepository(db *psql.PostgresDB) *Repository {
 		links:    psql.NewLinksRepository(db),
 		users:    psql.NewUsersRepository(db),
 		health:   psql.NewHealthRepository(db),
+		stats:    psql.NewStatsRepository(db),
 		Database: db,
 	}
 }

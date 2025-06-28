@@ -8,6 +8,7 @@
 //	DATABASE_DSN      | PostgreSQL Data Source Name received from an environment variable.
 //	ENABLE_HTTPS      | Indicates whether HTTPS is enabled for the server.
 //	CONFIG      	  | Name of the configuration file.
+//	TRUSTED_SUBNET    | Trusted subnet for the server in CIDR format (e.g., "192.168.1.0/24").
 //
 // command-line arguments:
 //
@@ -17,6 +18,7 @@
 //	-d | Postgres DSN given on the command line.
 //	-s | Indicates whether HTTPS is enabled for the server ("true", "yes", "1" -> true, "false", "no", "0" -> false).
 //	-c | Name of the configuration file.
+//	-t | Trusted subnet for the server in CIDR format (e.g., "192.168.1.0/24").
 //
 // config file:
 //
@@ -27,4 +29,5 @@
 //	base_url          | Short link base URL configured via an environment variable.
 //	database_dsn      | PostgreSQL Data Source Name received from an environment variable.
 //	enable_https      | Indicates whether HTTPS is enabled for the server.
+//	trusted_subnet    | Trusted subnet for the server in CIDR format (e.g., "192.168.1.0/24").
 package config

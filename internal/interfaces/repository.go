@@ -35,3 +35,8 @@ type UsersRepository interface {
 	GetLinks(ctx context.Context) ([]models.UserLinks, error)   // Retrieves all links created by the user.
 	DeleteLinks(ctx context.Context, shortLinks []string) error // Removes specified links created by the user.
 }
+
+// StatsRepository provides access to statistics-related data.
+type StatsRepository interface {
+	GetMainStats(ctx context.Context) (models.Stats, error) // Retrieves overall statistics.
+}

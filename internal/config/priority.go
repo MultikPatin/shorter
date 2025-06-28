@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 )
@@ -55,6 +56,18 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.HTTPSEnable = jsonCfg.HTTPSEnable
 	}
 
+	if envCfg.TrustedSubnet != "" {
+		finalConfig.TrustedSubnet = envCfg.TrustedSubnet
+	} else if cmdCfg.TrustedSubnet != "" {
+		finalConfig.TrustedSubnet = cmdCfg.TrustedSubnet
+	} else if jsonCfg.TrustedSubnet != "" {
+		finalConfig.TrustedSubnet = jsonCfg.TrustedSubnet
+	}
+
+	if !IsValidSubnetFormat(finalConfig.TrustedSubnet) {
+		finalConfig.TrustedSubnet = ""
+	}
+
 	finalConfig.PProfAddr = defaultPProfAddr
 	finalConfig.ExecutableDir = exeDir
 
@@ -84,4 +97,10 @@ func resolveBool(arg string) bool {
 	default:
 		return false
 	}
+}
+
+// IsValidSubnetFormat checks if the provided subnet string is in proper CIDR format.
+func IsValidSubnetFormat(subnet string) bool {
+	_, _, err := net.ParseCIDR(subnet)
+	return err == nil
 }
