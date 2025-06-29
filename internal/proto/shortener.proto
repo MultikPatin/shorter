@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package demo;
+
+option go_package = "demo/proto";
+
+
+message AddLinkRequest {
+  string url = 1;
+}
+
+message AddLinkResponse {
+  string Result = 1;
+}
+
+message LinkRequest {
+  string correlation_id = 1;
+  string original_url = 2;
+}
+
+message LinkResponse {
+  string correlation_id = 1;
+  string short_url = 2;
+}
+
+message AddLinksRequest {
+  repeated LinkRequest  links = 1;
+}
+
+message AddLinksResponse {
+  repeated LinkResponse  links = 1;
+}
+
+
+message RedirectLinkRequest {
+  string short_url = 1;
+}
+
+message RedirectLinkResponse {
+  string original_url = 1;
+}
+
+service Links {
+  rpc AddLink(AddLinkRequest) returns (AddLinkResponse);
+  rpc AddLinks(AddLinksRequest) returns (AddLinksResponse);
+  rpc GetLink(RedirectLinkRequest) returns (RedirectLinkResponse);
+}

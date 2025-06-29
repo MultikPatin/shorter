@@ -1,6 +1,8 @@
 module main
 
-go 1.22
+go 1.23.0
+
+toolchain go1.23.10
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
@@ -13,6 +15,8 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/tools v0.22.0
+	google.golang.org/grpc v1.73.0
+	google.golang.org/protobuf v1.36.6
 	honnef.co/go/tools v0.4.7
 // другие зависимости
 )
@@ -25,11 +29,14 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v0.0.0-00010101000000-000000000000 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20221208152030-732eee02a75a // indirect
 	golang.org/x/mod v0.18.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
