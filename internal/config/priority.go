@@ -32,6 +32,14 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.Addr = jsonCfg.Addr
 	}
 
+	if envCfg.GRPCAddr != "" {
+		finalConfig.GRPCAddr = envCfg.GRPCAddr
+	} else if cmdCfg.GRPCAddr != "" {
+		finalConfig.GRPCAddr = cmdCfg.GRPCAddr
+	} else if jsonCfg.GRPCAddr != "" {
+		finalConfig.GRPCAddr = jsonCfg.GRPCAddr
+	}
+
 	if envCfg.ShortLinkPrefix != "" {
 		finalConfig.ShortLinkPrefix = envCfg.ShortLinkPrefix
 	} else if cmdCfg.ShortLinkPrefix != "" {

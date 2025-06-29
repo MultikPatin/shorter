@@ -16,6 +16,7 @@ type Config struct {
 	PostgresDSN      *url.URL // Database connection details (Data Source Name).
 	PProfAddr        string   // Address for pprof profiling endpoint.
 	Addr             string   // Server listening address.
+	GRPCAddr         string   // gRPC server address.
 	ShortLinkPrefix  string   // Base URL for short links.
 	StorageFilePaths string   // Path where storage files are located.
 	ExecutableDir    string   // Project directory

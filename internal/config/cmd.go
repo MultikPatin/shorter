@@ -7,9 +7,16 @@ import (
 	"strings"
 )
 
+const (
+	defaultHTTPPort = 8080
+	defaultGRPCPORt = 5051
+	defaultHost     = "localhost"
+)
+
 // cmdConfig holds configuration settings obtained from command-line flags.
 type cmdConfig struct {
 	Addr             string // Command-line argument for server address.
+	GRPCAddr         string // Command-line argument for gRPC server address.
 	StorageFilePaths string // Command-line option specifying file storage paths.
 	ShortLinkPrefix  string // Base URL for short links passed via command-line.
 	PostgresDSN      string // Postgres DSN given on the command line.
@@ -30,6 +37,8 @@ func parseCmd() (*cmdConfig, error) {
 
 	hostPort := new(servHost)
 	_ = flag.Value(hostPort)
+	gRPCHostPort := new(servHost)
+	_ = flag.Value(gRPCHostPort)
 
 	flag.StringVar(&cfg.PostgresDSN, "d", "", "Postgres DSN")
 	flag.StringVar(&cfg.ShortLinkPrefix, "b", "", "Short link server")
@@ -38,9 +47,26 @@ func parseCmd() (*cmdConfig, error) {
 	flag.StringVar(&cfg.ConfFile, "c", "", "Name of the configuration file")
 	flag.StringVar(&cfg.TrustedSubnet, "t", "", "Trusted subnet")
 	flag.Var(hostPort, "a", "Network address host:port")
+	flag.Var(hostPort, "g", "gRPC Network port")
 	flag.Parse()
 
 	cfg.Addr = hostPort.String()
+
+	defaultHTTTPAddr := servHost{
+		Host: defaultHost,
+		Port: defaultHTTPPort,
+	}
+	defaultGRPCAddr := servHost{
+		Host: defaultHost,
+		Port: defaultGRPCPORt,
+	}
+
+	if gRPCHostPort.String() != defaultHTTTPAddr.String() {
+		cfg.GRPCAddr = gRPCHostPort.String()
+	} else {
+		cfg.GRPCAddr = defaultGRPCAddr.String()
+	}
+
 	return cfg, nil
 }
 
@@ -69,9 +95,9 @@ func (a *servHost) Set(s string) error {
 // normalize ensures valid defaults for empty or zero-value fields.
 func (a *servHost) normalize() {
 	if a.Port == 0 {
-		a.Port = 8080
+		a.Port = defaultHTTPPort
 	}
 	if a.Host == "" {
-		a.Host = "localhost"
+		a.Host = defaultHost
 	}
 }
