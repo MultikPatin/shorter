@@ -20,3 +20,8 @@ type UsersHandlers interface {
 	GetLinks(w http.ResponseWriter, r *http.Request)    // Fetches all links owned by the authenticated user.
 	DeleteLinks(w http.ResponseWriter, r *http.Request) // Deletes selected links belonging to the user.
 }
+
+// StatsHandlers encapsulates handlers responsible for gathering and presenting statistics.
+type StatsHandlers interface {
+	GetMainStats(w http.ResponseWriter, r *http.Request) // Retrieves overall statistics.
+}

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 )
@@ -31,6 +32,14 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.Addr = jsonCfg.Addr
 	}
 
+	if envCfg.GRPCAddr != "" {
+		finalConfig.GRPCAddr = envCfg.GRPCAddr
+	} else if cmdCfg.GRPCAddr != "" {
+		finalConfig.GRPCAddr = cmdCfg.GRPCAddr
+	} else if jsonCfg.GRPCAddr != "" {
+		finalConfig.GRPCAddr = jsonCfg.GRPCAddr
+	}
+
 	if envCfg.ShortLinkPrefix != "" {
 		finalConfig.ShortLinkPrefix = envCfg.ShortLinkPrefix
 	} else if cmdCfg.ShortLinkPrefix != "" {
@@ -53,6 +62,18 @@ func mergeConfigs(exeDir string, envCfg *envConfig, cmdCfg *cmdConfig, jsonCfg *
 		finalConfig.HTTPSEnable = resolveBool(cmdCfg.HTTPSEnable)
 	} else if jsonCfg.HTTPSEnable {
 		finalConfig.HTTPSEnable = jsonCfg.HTTPSEnable
+	}
+
+	if envCfg.TrustedSubnet != "" {
+		finalConfig.TrustedSubnet = envCfg.TrustedSubnet
+	} else if cmdCfg.TrustedSubnet != "" {
+		finalConfig.TrustedSubnet = cmdCfg.TrustedSubnet
+	} else if jsonCfg.TrustedSubnet != "" {
+		finalConfig.TrustedSubnet = jsonCfg.TrustedSubnet
+	}
+
+	if !IsValidSubnetFormat(finalConfig.TrustedSubnet) {
+		finalConfig.TrustedSubnet = ""
 	}
 
 	finalConfig.PProfAddr = defaultPProfAddr
@@ -84,4 +105,10 @@ func resolveBool(arg string) bool {
 	default:
 		return false
 	}
+}
+
+// IsValidSubnetFormat checks if the provided subnet string is in proper CIDR format.
+func IsValidSubnetFormat(subnet string) bool {
+	_, _, err := net.ParseCIDR(subnet)
+	return err == nil
 }

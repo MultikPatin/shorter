@@ -24,3 +24,9 @@ type UserLinks struct {
 	Shorten  string // Shortened URL.
 	Original string // Original URL.
 }
+
+// Stats captures statistics related to the service.
+type Stats struct {
+	Urls  int // Total number of shortened URLs.
+	Users int // Number of unique users.
+}

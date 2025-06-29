@@ -6,12 +6,14 @@ import (
 
 // envConfig holds configuration settings retrieved from environment variables.
 type envConfig struct {
-	StorageFilePaths string `env:"FILE_STORAGE_PATH"` // File storage paths specified via an environment variable.
-	Addr             string `env:"SERVER_ADDRESS"`    // Server address defined by an environment variable.
-	ShortLinkPrefix  string `env:"BASE_URL"`          // Short link base URL configured via an environment variable.
-	PostgresDSN      string `env:"DATABASE_DSN"`      // PostgreSQL Data Source Name received from an environment variable.
-	HTTPSEnable      string `env:"ENABLE_HTTPS"`      // Indicates whether HTTPS is enabled for the server.
-	ConfFile         string `env:"CONFIG"`            // Name of the configuration file.
+	StorageFilePaths string `env:"FILE_STORAGE_PATH"`   // File storage paths specified via an environment variable.
+	Addr             string `env:"SERVER_ADDRESS"`      // Server address defined by an environment variable.
+	GRPCAddr         string `env:"GRPC_SERVER_ADDRESS"` // Command-line argument for gRPC server address.
+	ShortLinkPrefix  string `env:"BASE_URL"`            // Short link base URL configured via an environment variable.
+	PostgresDSN      string `env:"DATABASE_DSN"`        // PostgreSQL Data Source Name received from an environment variable.
+	HTTPSEnable      string `env:"ENABLE_HTTPS"`        // Indicates whether HTTPS is enabled for the server.
+	ConfFile         string `env:"CONFIG"`              // Name of the configuration file.
+	TrustedSubnet    string `env:"TRUSTED_SUBNET"`      // Trusted subnet for the server.
 }
 
 // parseEnv extracts configuration from environment variables.

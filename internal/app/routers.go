@@ -27,6 +27,9 @@ func NewRouters(h *Handlers) *chi.Mux {
 				r.Post("/", h.links.AddLink)
 				r.Post("/batch", h.links.AddLinks)
 			})
+			r.Route("/internal", func(r chi.Router) {
+				r.Get("/stats", h.stats.GetMainStats)
+			})
 		})
 	})
 	return r
